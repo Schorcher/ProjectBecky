@@ -11,22 +11,20 @@ class JoinGame {
     constructor(username: string, canvas: HTMLCanvasElement) {
         this.username = username;
         this.canvas = canvas;
-        //this.init();
-        //this.join();
     }
 
     public join(): void {
         this.init();
     }
 
-    public changeUsername(newName: String): void {
+    public changeUsername(oldName: string, newName: string, auth: string): void {
         console.log('Change username requested. Requested username is: ' + newName)
-        this.connection.send(JSON.stringify({
-            username: newName,
-
-        }));
+        let request = new UsernameChangeRequest();
+        request.oldUsername = oldName;
+        request.newUsername = newName;
+        request.authenticationString = auth;
+        this.connection.send(JSON.stringify(request));
     }
-
 
     /**
      *  Init join game
@@ -68,31 +66,39 @@ class JoinGame {
             return;
         }
 
+        this.changeUsername(state.initialUsername, this.username, state.authenticationString);
+
         this.initialJoinState = state;
         this.connection.onmessage = (event: MessageEvent) => {
-            this.handleUsernameMessage(message);
+            this.handleUsernameMessage(event.data);
         }
+
     }
 
     private handleUsernameMessage(message: string): void {
         console.log("Username message received from server: " + message);
 
         let username: ServerUsernameRequestStatus = JSON.parse(message);
-        if(username == null || username.getMessage() == null || username.getStatus() == null) {
+        if (username == null || username.message == null || username.status == null) {
+            console.log("Something is null...")
             return;
         }
 
-        if(username.getStatus() === 'failed') {
+        if (username.status === 'failed') {
             this.connection.close();
             //TODO: Display the error string
-            console.log(username.getMessage());
+            console.log("The status failed.. :" + username.message);
             return;
         }
 
         //create the client and kill the current listener
-        this.connection.onmessage = (event: MessageEvent) => {};
-        let gameClient: GameClient = new GameClient(this.canvas, this.connection, username.getMessage(), this.initialJoinState.authenticationString);
+        this.connection.onmessage = (event: MessageEvent) => {
+            //this.connection.close(1,'Closing Connection');
+            console.log("Attempting to close connection...")
+        };
+        let gameClient: GameClient = new GameClient(this.canvas, this.connection, username.message, this.initialJoinState.authenticationString);
         gameClient.run();
+        console.log("Game should be running...")
     }
 
 

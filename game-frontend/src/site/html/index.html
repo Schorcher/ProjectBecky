@@ -84,6 +84,10 @@
 
     logon.addEventListener('click', function () {
         message.innerHTML = 'Join Button Clicked';
+
+        username = "Fuck You";
+        console.log("Username is: " + username);
+
         message.style.display = 'none';
         var game = new JoinGame(username, game_canvas);
         game.join();

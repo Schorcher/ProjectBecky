@@ -65,16 +65,20 @@ public class SimpleServer extends WebSocketServer {
         final JSONObject jsonObject = new JSONObject(initialJoinState);
         final String jsonSendMessage = jsonObject.toString();
         webSocket.send(jsonSendMessage);
+        System.out.println("On open finished...");
     }
 
     @Override
     public void onMessage(final WebSocket webSocket, final String message) {
+        System.out.println(message);
         final JSONObject serializedMessage = new JSONObject(message);
         //is this a username change request
         if(serializedMessage.has("oldUsername")) {
+            System.out.println("Username Change Request");
             final UsernameChangeRequest request = deserializeUsernameChangeRequest(serializedMessage);
             final Player player = gameInstance.getPlayerByUsername(request.getOldUsername());
             if(!player.getAuthenticationString().equals(request.getAuthenticationString())) {
+                System.out.println("Bad Auth string..");
                 return; //bad authentication string
             }
             final ServerUsernameRequestStatus status = new ServerUsernameRequestStatus();
@@ -93,6 +97,7 @@ public class SimpleServer extends WebSocketServer {
             webSocket.send(statusJson.toString());
         }
         else {
+            System.out.println("Input State Change");
             final InputStateChange stateChange = deserializeInputStateChangge(serializedMessage);
             final Player player = gameInstance.getPlayerByUsername(stateChange.getUsername());
             if(player == null || !player.getAuthenticationString().equals(stateChange.getAuthenticationString())) {
