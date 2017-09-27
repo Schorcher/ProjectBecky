@@ -2,7 +2,9 @@
  * A simple 2D renderer class.
  */
 class SimpleRenderer implements Renderer {
-    private elements: Set<Renderable>;
+    private clientPlayer: ClientPlayer;
+    private opponentPlayers: Set<OpponentPlayer> = new Set<OpponentPlayer>();
+    private gameBackground: GameBackground;
     private renderingContext: CanvasRenderingContext2D;
     private screenOrigin: Point;
 
@@ -13,7 +15,15 @@ class SimpleRenderer implements Renderer {
     }
 
     public addRenderable(element: Renderable): void {
-        this.elements.add(element);
+        if(element instanceof ClientPlayer) {
+            this.clientPlayer = element;
+        }
+        else if(element instanceof OpponentPlayer) {
+            this.opponentPlayers.add(element);
+        }
+        else if(element instanceof GameBackground) {
+            this.gameBackground = element;
+        }
     }
 
     public removeRenderable(element: Renderable): boolean {
@@ -25,8 +35,9 @@ class SimpleRenderer implements Renderer {
     }
 
     public draw(): void {
-        for(let index: number = 0; index < this.elements.size(); index++) {
-            this.elements[index].draw(this.renderingContext, this.screenOrigin);
-        }
+        console.log("FUCK");
+        this.gameBackground.draw(this.renderingContext, this.screenOrigin);
+
+        this.clientPlayer.draw(this.renderingContext, this.screenOrigin);
     }
 }

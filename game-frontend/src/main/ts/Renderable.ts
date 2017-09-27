@@ -1,7 +1,7 @@
 /**
  * This interface represents any object that can be rendered.
  */
-interface Renderable {
+class Renderable {
     /**
      * Draws this renderable to the canvas using the provided rendering context.
      * @param context The rendering context to perform drawing operations

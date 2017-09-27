@@ -10,8 +10,8 @@ class GameClient implements GameEntity {
     private canvas: HTMLCanvasElement;
     private connection: WebSocket;
     private player: ClientPlayer;
-    private opponents: Set<OpponentPlayer>;
-    private renderer: Renderer;
+    private opponents: Set<OpponentPlayer> = new Set<OpponentPlayer>();
+    private renderer: SimpleRenderer;
     private playing: boolean = true;
     private username: string;
     private authenticationString: string;
@@ -28,14 +28,15 @@ class GameClient implements GameEntity {
         this.connection = connection;
         this.username = username;
         this.authenticationString = authenticationString;
+        this.background = new GameBackground(this.canvas.width, this.canvas.height, 10000, 10000);
         this.init();
     }
 
-    public getParentEntity(): GameEntity {
+    public getParentEntity = (): GameEntity  => {
         return null; //GameClient has no parent. It IS the container.
     }
 
-    public getChildEntities(): Set<GameEntity> {
+    public getChildEntities = (): Set<GameEntity> => {
         let entities: Set<GameEntity> = new Set<GameEntity>();
         entities.add(this.player);
         for(let i: number = 0; i < this.opponents.size(); i++) {
@@ -45,13 +46,13 @@ class GameClient implements GameEntity {
     }
 
     private frameStart: number;
-    public run(): void {
-        this.frameStart = this.currentTimeMillis();
+    public run = (): void => {
+        this.frameStart = Date.now();
         this.execGameFrame();
     }
 
-    private execGameFrame(): void {
-        let frameEnd: number = this.currentTimeMillis();
+    private execGameFrame = (): void => {
+        let frameEnd: number = Date.now();
         let elapsedTime: number = frameEnd - this.frameStart;
         this.frameStart = frameEnd;
 
@@ -70,17 +71,17 @@ class GameClient implements GameEntity {
         setTimeout(this.execGameFrame, waitTime);
     }
 
-    private update(elapsedTime: number): void {
+    private update = (elapsedTime: number): void => {
         //update current player
         this.player.update(elapsedTime);
 
         //update opponent player
-        for(let i: number = 0; i < this.opponents.size(); i++) {
-            this.opponents[i].update(elapsedTime);
+        for(let i: number = 0; i < this.opponents.length; i++) {
+            this.opponents.get(i).update(elapsedTime);
         }
     }
 
-    private draw(): void {
+    private draw = (): void => {
         //this might be all that has to be done. Maybe.
         this.renderer.draw();
     }
@@ -93,10 +94,6 @@ class GameClient implements GameEntity {
         this.initRenderer();
         this.initSocketListeners()
         this.initInput();
-    }
-
-    private currentTimeMillis(): number {
-        return performance.now() || Date.now();
     }
 
     private initPlayer(): void {
@@ -128,16 +125,16 @@ class GameClient implements GameEntity {
         }
     }
 
-    private handleConnectionError(message: string) {
+    private handleConnectionError = (message: string) => {
         this.playing = false;
         console.log(message);
     }
 
-    private handleMessageFromServer(message: string): void {
+    private handleMessageFromServer = (message: string): void => {
         //TODO: Handle messages from server
     }
 
-    private handleKeyDownInput(event: KeyboardEvent): void {
+    private handleKeyDownInput = (event: KeyboardEvent): void => {
         let meHandleIt: boolean = false;
         let changeType: string = "w";
 
@@ -183,7 +180,7 @@ class GameClient implements GameEntity {
         }
     }
 
-    private handleKeyUpInput(event: KeyboardEvent): void {
+    private handleKeyUpInput = (event: KeyboardEvent): void => {
         let meHandleIt: boolean = false;
         let changeType: string = "";
 

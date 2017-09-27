@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "outDir": "./src/site/js",
-    "module": "commonjs",
+    "module": "none",
     "target": "es5",
     "sourceMap": true
   },

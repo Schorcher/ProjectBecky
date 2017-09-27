@@ -72,7 +72,6 @@ class JoinGame {
         this.connection.onmessage = (event: MessageEvent) => {
             this.handleUsernameMessage(event.data);
         }
-
     }
 
     private handleUsernameMessage(message: string): void {
@@ -86,16 +85,15 @@ class JoinGame {
 
         if (username.status === 'failed') {
             this.connection.close();
-            //TODO: Display the error string
+            //TODO: Display the error string (This is for you to do David)
             console.log("The status failed.. :" + username.message);
             return;
         }
 
         //create the client and kill the current listener
-        this.connection.onmessage = (event: MessageEvent) => {
-            //this.connection.close(1,'Closing Connection');
-            console.log("Attempting to close connection...")
-        };
+        //this empty listener is so we don't receive more events
+        this.connection.onmessage = (event: MessageEvent) => {};
+
         let gameClient: GameClient = new GameClient(this.canvas, this.connection, username.message, this.initialJoinState.authenticationString);
         gameClient.run();
         console.log("Game should be running...")
