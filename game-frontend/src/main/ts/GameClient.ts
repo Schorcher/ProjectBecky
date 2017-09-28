@@ -132,7 +132,24 @@ class GameClient implements GameEntity {
     }
 
     private handleMessageFromServer = (message: string): void => {
-        //TODO: Handle messages from server
+        let jsonmessage: ServerPlayerUpdate = JSON.parse(message);
+        console.log(message);
+        if(jsonmessage == null || jsonmessage.playerName == null || jsonmessage.posX == null || jsonmessage.posY == null) {
+            return;
+        }
+
+        if(this.player.getUsername() === jsonmessage.playerName) {
+            this.player.setPosition(jsonmessage.posX, jsonmessage.posY);
+            return;
+        }
+
+        for(let i = 0; i < this.opponents.length; i++) {
+            let p: OpponentPlayer = this.opponents.get(i);
+            if(p.getUsername() === jsonmessage.playerName) {
+                p.setPosition(jsonmessage.posX, jsonmessage.posy);
+                return;
+            }
+        }
     }
 
     private handleKeyDownInput = (event: KeyboardEvent): void => {

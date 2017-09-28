@@ -26,6 +26,7 @@ public class ServerPlayerUpdate
     public ServerPlayerUpdate(final Player player) {
         this.posX = player.getX_position();
         this.posY = player.getY_position();
+        this.playerName = player.getPlayerUsername();
     }
 
     public int getPosX() {
