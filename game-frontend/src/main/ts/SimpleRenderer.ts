@@ -39,6 +39,7 @@ class SimpleRenderer implements Renderer {
         }
         if (this.opponentPlayers.contains(element as OpponentPlayer)) {
             this.opponentPlayers.remove(element as OpponentPlayer);
+            console.log('Removing player...');
         }
     }
 

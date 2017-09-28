@@ -2,7 +2,7 @@
  * A simple set class
  */
 class Set<T> {
-    public length: number = -1;
+    public length: number = 0;
     private elements: T[] = [];
 
     public add(element: T): void {
@@ -31,5 +31,9 @@ class Set<T> {
                 return true;
             }
         }
+    }
+
+    public empty(): boolean {
+        return (this.elements.length === 0);
     }
 }

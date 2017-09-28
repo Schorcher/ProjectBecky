@@ -140,6 +140,7 @@ class GameClient implements GameEntity {
         if(message.charAt(0) === '[' && message.charAt(message.length - 1) === ']') {
             let updates = JSON.parse(message) as ServerPlayerUpdate[];
 
+            // Update current players
             for(let i = 0; i < updates.length; i++) {
                 let serverUpdate: ServerPlayerUpdate = updates[i];
 
@@ -157,7 +158,7 @@ class GameClient implements GameEntity {
                         }
                     }
                     if(!found) {
-                        //console.log("NEW PLAYER: " + serverUpdate.playerName);
+                        console.log("NEW PLAYER: " + serverUpdate.playerName);
                         let opponent: OpponentPlayer = new OpponentPlayer(this, serverUpdate.playerName);
                         opponent.setPosition(serverUpdate.posX, serverUpdate.posY);
                         this.opponents.add(opponent);
@@ -165,6 +166,28 @@ class GameClient implements GameEntity {
                     }
                 }
             }
+            // Check for removed players
+            for (let i = 0; i < this.opponents.length; i++) {
+                let opponent: OpponentPlayer = this.opponents.get(i);
+                let found: boolean = false;
+                for (let j = 0; j < updates.length; j++) {
+                    let serverUpdate: ServerPlayerUpdate = updates[j];
+                    if (opponent.getUsername() === serverUpdate.playerName) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    console.log('Player not sent by server: ' + opponent.getUsername());
+                    console.log('Removing player: ' + opponent.getUsername());
+                    this.opponents.remove(opponent);
+                    this.renderer.removeRenderable(opponent);
+                    if (!this.opponents.contains(opponent)) {
+                        console.log('Removed player successfully!')
+                    }
+                }
+            }
+
         }
     }
 
