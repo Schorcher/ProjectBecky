@@ -21,6 +21,7 @@ class ClientPlayer implements Player, Updateable, GameEntity {
         this.angle = angle;
         this.velocity = new Point(0, 0);
         this.parent = parent;
+        this.username = username;
     }
 
     public getUsername(): string {

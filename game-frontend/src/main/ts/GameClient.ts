@@ -133,23 +133,34 @@ class GameClient implements GameEntity {
         console.log(message);
     }
 
-    private handleMessageFromServer = (message: string): void => {
-        let jsonmessage: ServerPlayerUpdate = JSON.parse(message);
-        console.log(message);
-        if(jsonmessage == null || jsonmessage.playerName == null || jsonmessage.posX == null || jsonmessage.posY == null) {
-            return;
-        }
+    private handleMessageFromServer(message: string): void {
+        if(message.charAt(0) === '[' && message.charAt(message.length - 1) === ']') {
+            let updates = JSON.parse(message) as ServerPlayerUpdate[];
 
-        if(this.player.getUsername() === jsonmessage.playerName) {
-            this.player.setPosition(jsonmessage.posX, jsonmessage.posY);
-            return;
-        }
+            for(let i = 0; i < updates.length; i++) {
+                let serverUpdate: ServerPlayerUpdate = updates[i];
 
-        for(let i = 0; i < this.opponents.length; i++) {
-            let p: OpponentPlayer = this.opponents.get(i);
-            if(p.getUsername() === jsonmessage.playerName) {
-                p.setPosition(jsonmessage.posX, jsonmessage.posy);
-                return;
+                if(this.player.getUsername() === serverUpdate.playerName) {
+                    this.player.setPosition(serverUpdate.posX, serverUpdate.posY);
+                }
+                else {
+                    let found: boolean = false;
+                    for(let j = 0; j < this.opponents.length; j++) {
+                        let opponent: OpponentPlayer = this.opponents.get(j);
+                        if(opponent.getUsername() === serverUpdate.playerName) {
+                            opponent.setPosition(serverUpdate.posX, serverUpdate.posY);
+                            found = true;
+                            break;
+                        }
+                    }
+                    if(!found) {
+                        //console.log("NEW PLAYER: " + serverUpdate.playerName);
+                        let opponent: OpponentPlayer = new OpponentPlayer(this, serverUpdate.playerName);
+                        opponent.setPosition(serverUpdate.posX, serverUpdate.posY);
+                        this.opponents.add(opponent);
+                        this.renderer.addRenderable(opponent);
+                    }
+                }
             }
         }
     }

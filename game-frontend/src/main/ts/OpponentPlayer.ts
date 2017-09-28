@@ -51,12 +51,13 @@ class OpponentPlayer implements Player, Updateable, GameEntity {
     }
 
     public draw(context: CanvasRenderingContext2D, screenOrigin: Point): void {
+        console.log("DRAW");
         let screenPos: Point = this.getScreenspacePosition(screenOrigin);
         let radius: number = 32;
 
         if(screenPos.getX() < -radius || screenPos.getX() > context.canvas.width + radius ||
            screenPos.getY() < -radius || screenPos.getY() > context.canvas.height + radius) {
-            return; //no rendering needed because player is outside of renderable screen space
+            //return; //no rendering needed because player is outside of renderable screen space
         }
 
         //draw a red circle

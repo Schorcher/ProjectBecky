@@ -21,6 +21,7 @@ class SimpleRenderer implements Renderer {
         }
         else if(element instanceof OpponentPlayer) {
             this.opponentPlayers.add(element);
+            console.log("ADDED OPPONENT");
         }
         else if(element instanceof GameBackground) {
             this.gameBackground = element;
@@ -49,7 +50,10 @@ class SimpleRenderer implements Renderer {
         this.renderingContext.clearRect(0, 0, this.renderingContext.canvas.width, this.renderingContext.canvas.height);
 
         this.gameBackground.draw(this.renderingContext, this.screenOrigin);
-
+        for(let i = 0; i < this.opponentPlayers.length; i++) {
+            let p: OpponentPlayer = this.opponentPlayers.get(i);
+            p.draw(this.renderingContext, this.screenOrigin);
+        }
         this.clientPlayer.draw(this.renderingContext, this.screenOrigin);
     }
 }

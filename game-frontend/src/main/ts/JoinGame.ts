@@ -93,7 +93,6 @@ class JoinGame {
         //create the client and kill the current listener
         //this empty listener is so we don't receive more events
         this.connection.onmessage = (event: MessageEvent) => {};
-
         let gameClient: GameClient = new GameClient(this.canvas, this.connection, username.message, this.initialJoinState.authenticationString);
         gameClient.run();
         console.log("Game should be running...")
