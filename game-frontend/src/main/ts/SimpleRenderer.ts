@@ -11,7 +11,6 @@ class SimpleRenderer implements Renderer {
     constructor(context: CanvasRenderingContext2D) {
         this.renderingContext = context;
         this.screenOrigin = new Point();
-        this.elements = new Set<Renderable>();
     }
 
     public addRenderable(element: Renderable): void {
@@ -27,7 +26,17 @@ class SimpleRenderer implements Renderer {
     }
 
     public removeRenderable(element: Renderable): boolean {
-        return this.elements.remove(element);
+        if(element instanceof ClientPlayer) {
+            this.clientPlayer = null;
+            return true;
+        }
+        if(element instanceof GameBackground) {
+            this.gameBackground = null;
+            return true;
+        }
+        if(this.opponentPlayers.contains(element)) {
+            this.opponentPlayers.remove(element);
+        }
     }
 
     public updateScreenOrigin(screenOrigin: Point): void {
@@ -35,7 +44,8 @@ class SimpleRenderer implements Renderer {
     }
 
     public draw(): void {
-        console.log("FUCK");
+        this.renderingContext.clearRect(0, 0, this.renderingContext.canvas.width, this.renderingContext.canvas.height);
+
         this.gameBackground.draw(this.renderingContext, this.screenOrigin);
 
         this.clientPlayer.draw(this.renderingContext, this.screenOrigin);

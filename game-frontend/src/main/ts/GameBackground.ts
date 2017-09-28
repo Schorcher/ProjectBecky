@@ -8,7 +8,7 @@ class GameBackground implements Renderable {
     private borderColor: string = "#000000";
     private gridColor: string = "#a8a8a8";
 
-    private player: Player;
+    private player: ClientPlayer;
     private viewWidth: number;
     private viewHeight: number;
     private worldWidth: number;
@@ -37,7 +37,7 @@ class GameBackground implements Renderable {
      * Links a player to the background. The player is what determines the relative positioning of the background.
      * @param player
      */
-    public linkPlayer(player: Player) : void {
+    public linkPlayer(player: ClientPlayer) : void {
         this.player = player;
     }
 
@@ -50,7 +50,7 @@ class GameBackground implements Renderable {
             playerY = this.player.getYPosition();
         }
 
-        context.fillStyle = this.gridColor;
+        context.strokeStyle = this.gridColor;
         context.lineWidth = this.lineThickness;
         this.drawVerticalLines(context, playerX); //draw vertical grid lines
         this.drawHorizontalLines(context, playerY); //draw horizontal grid lines
@@ -101,7 +101,7 @@ class GameBackground implements Renderable {
                                           centerScreen.getY() + (this.worldHeight - playerY));
 
         //for each screen side, determine if part of border can be seen
-        context.fillStyle = this.borderColor;
+        context.strokeStyle = this.borderColor;
         context.lineWidth = this.borderThickness;
         context.beginPath();
 

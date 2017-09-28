@@ -99,6 +99,7 @@ class GameClient implements GameEntity {
     private initPlayer(): void {
         this.background = new GameBackground(this.canvas.width, this.canvas.height, this.worldWidth, this.worldHeight);
         this.player = new ClientPlayer(this, 0, 0, 0, this.username);
+        this.background.linkPlayer(this.player);
     }
 
     private initInput(): void {

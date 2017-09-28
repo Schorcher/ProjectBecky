@@ -27,52 +27,52 @@ class ClientPlayer implements Player, Updateable, GameEntity {
         return this.username;
     }
 
-    public getXPosition(): number {
+    public getXPosition = (): number => {
         return this.position.getX();
     }
 
-    public getYPosition(): number {
+    public getYPosition = (): number => {
         return this.position.getY();
     }
 
-    public setPosition(x: number, y: number): void {
+    public setPosition = (x: number, y: number): void => {
         this.position.setX(x);
         this.position.setY(y);
     }
 
-    public getAngle(): number {
+    public getAngle = (): number => {
         return this.angle;
     }
 
-    public setAngle(angle: number): void {
+    public setAngle = (angle: number): void => {
         this.angle = angle;
     }
 
-    public aimAtMouse(mouseX: number, mouseY: number): void {
+    public aimAtMouse = (mouseX: number, mouseY: number): void => {
         //TODO: Aim player towards mouse (phase 2)
     }
 
-    public setMoveUp(up: boolean): void {
+    public setMoveUp = (up: boolean): void => {
         this.moveUp = up;
     }
 
-    public setMoveDown(down: boolean): void {
+    public setMoveDown = (down: boolean): void => {
         this.moveDown = down;
     }
 
-    public setMoveLeft(left: boolean): void {
+    public setMoveLeft = (left: boolean): void => {
         this.moveLeft = left;
     }
 
-    public setMoveRight(right: boolean): void {
+    public setMoveRight = (right: boolean): void => {
         this.moveRight = right;
     }
 
-    public getChildEntities(): Set<GameEntity> {
+    public getChildEntities = (): Set<GameEntity> => {
         return new Set<GameEntity>();
     }
 
-    public getParentEntity(): GameEntity {
+    public getParentEntity = (): GameEntity => {
         return this.parent;
     }
 

@@ -22,6 +22,14 @@ class Set<T> {
     }
 
     public get(index: number): T {
-        return this.elements[i];
+        return this.elements[index];
+    }
+
+    public contains(element: T): boolean {
+        for(let i = 0; i < this.length; i++) {
+            if(element === this.elements[i]) {
+                return true;
+            }
+        }
     }
 }
