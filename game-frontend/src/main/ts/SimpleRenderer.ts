@@ -8,6 +8,8 @@ class SimpleRenderer implements Renderer {
     private renderingContext: CanvasRenderingContext2D;
     private screenOrigin: Point;
 
+    private
+
     constructor(context: CanvasRenderingContext2D) {
         this.renderingContext = context;
         this.screenOrigin = new Point();

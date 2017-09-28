@@ -24,6 +24,8 @@ class GameClient implements GameEntity {
      * @param Username of the player
      */
     constructor(canvas: HTMLCanvasElement, connection: WebSocket, username: string, authenticationString: string) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
         this.canvas = canvas;
         this.connection = connection;
         this.username = username;
@@ -39,7 +41,7 @@ class GameClient implements GameEntity {
     public getChildEntities = (): Set<GameEntity> => {
         let entities: Set<GameEntity> = new Set<GameEntity>();
         entities.add(this.player);
-        for(let i: number = 0; i < this.opponents.size(); i++) {
+        for (let i: number = 0; i < this.opponents.length; i++) {
             entities.add(this.opponents[i]);
         }
         return entities;

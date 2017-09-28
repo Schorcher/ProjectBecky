@@ -28,7 +28,7 @@
             </div>
 
             <div class="inner cover">
-                <h1 class="cover-heading">Enter Username</h1>
+                <h1 id="login_text" class="cover-heading">Enter Username</h1>
                 <div id="form" class="form-control">
                     <div id="input">
                         <div id="join_message" hidden>
@@ -42,7 +42,7 @@
                     <button id="logon" class="btn btn-lg btn-secondary">Join</button>
                 </p>
                 <div id="game">
-                    <canvas id="gameCanvas" width="400" height="400">
+                    <canvas id="gameCanvas" width="700" height="400" style="border:1px solid #000000; display: none">
 
                     </canvas>
                 </div>
@@ -77,20 +77,27 @@
 <script src="./JoinGame.js"></script>
 <script>
     var logon = document.getElementById('logon');
-    var username = document.getElementById('username').value;
+    var username = document.getElementById('username');
     var message = document.getElementById('join_message');
     var game_canvas = document.getElementById('gameCanvas');
-
+    var login_block = document.getElementById('form');
+    var login_text = document.getElementById('login_text');
 
     logon.addEventListener('click', function () {
         message.innerHTML = 'Join Button Clicked';
 
-        username = "Fuck You";
-        console.log("Username is: " + username);
+        //console.log(username.value);
 
         message.style.display = 'none';
-        var game = new JoinGame(username, game_canvas);
+        var game = new JoinGame(username.value, game_canvas);
         game.join();
+
+        logon.style.display = 'none';
+        username.style.display = 'none';
+        login_block.style.display = 'none';
+        login_text.style.display = 'none';
+        game_canvas.style.display = 'block';
+
     });
 </script>
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
