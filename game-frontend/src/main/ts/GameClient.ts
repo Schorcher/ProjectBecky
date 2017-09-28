@@ -30,7 +30,7 @@ class GameClient implements GameEntity {
         this.connection = connection;
         this.username = username;
         this.authenticationString = authenticationString;
-        this.background = new GameBackground(this.canvas.width, this.canvas.height, 10000, 10000);
+        this.background = new GameBackground(this.canvas.width, this.canvas.height, 2000, 2000);
         this.init();
     }
 
@@ -63,7 +63,7 @@ class GameClient implements GameEntity {
 
         //30 fps is 33 milliseconds per frame
         //if frame took less than 34 millis to complete then waitout the remaining time
-        let waitTime: number = 34 - elapsedTime;
+        let waitTime: number = 16.6 - elapsedTime;
 
         if(waitTime < 0) {
             waitTime = 0;

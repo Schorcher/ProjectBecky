@@ -100,6 +100,12 @@ class ClientPlayer implements Player, Updateable, GameEntity {
         context.strokeStyle = "#003300";
         context.stroke();
         context.closePath();
+
+        // Draw the username under player
+        context.font = "12px Arial";
+        context.fillStyle = "yellow";
+        context.fillText(this.username, (context.canvas.width / 2), (context.canvas.height / 2));
+
     }
 
     public update(elapsedTime: number): void {

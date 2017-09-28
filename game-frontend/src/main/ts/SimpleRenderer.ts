@@ -37,8 +37,8 @@ class SimpleRenderer implements Renderer {
             this.gameBackground = null;
             return true;
         }
-        if(this.opponentPlayers.contains(element)) {
-            this.opponentPlayers.remove(element);
+        if (this.opponentPlayers.contains(element as OpponentPlayer)) {
+            this.opponentPlayers.remove(element as OpponentPlayer);
         }
     }
 

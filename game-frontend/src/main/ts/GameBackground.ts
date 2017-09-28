@@ -2,9 +2,9 @@
  * Represents, and is responsible for the background of the game screen as well as the world border.
  */
 class GameBackground implements Renderable {
-    private gridSize: number = 16; //default grid size is 16 pixels
-    private lineThickness: number = 1;
-    private borderThickness: number = 4;
+    private gridSize: number = 32; //default grid size is 16 pixels
+    private lineThickness: number = .5;
+    private borderThickness: number = 30;
     private borderColor: string = "#000000";
     private gridColor: string = "#a8a8a8";
 
@@ -52,8 +52,8 @@ class GameBackground implements Renderable {
 
         context.strokeStyle = this.gridColor;
         context.lineWidth = this.lineThickness;
-        this.drawVerticalLines(context, playerX); //draw vertical grid lines
-        this.drawHorizontalLines(context, playerY); //draw horizontal grid lines
+        //this.drawVerticalLines(context, playerX); //draw vertical grid lines
+        //this.drawHorizontalLines(context, playerY); //draw horizontal grid lines
         this.drawBorder(context, playerX, playerY); //draw visible parts of border
     }
 

@@ -11,7 +11,13 @@
 </head>
 
 <body>
-<div class="site-wrapper">
+
+<div id="game">
+    <canvas id="gameCanvas" width="700" height="400" style="border:1px solid #000000; display: none">
+
+    </canvas>
+</div>
+<div id="site_wrapper" class="site-wrapper">
     <div class="site-wrapper-inner">
         <div class="cover-container">
 
@@ -27,7 +33,7 @@
                 </div>
             </div>
 
-            <div class="inner cover">
+            <div id="inner_cover" class="inner cover">
                 <h1 id="login_text" class="cover-heading">Enter Username</h1>
                 <div id="form" class="form-control">
                     <div id="input">
@@ -41,11 +47,6 @@
                 <p class="lead">
                     <button id="logon" class="btn btn-lg btn-secondary">Join</button>
                 </p>
-                <div id="game">
-                    <canvas id="gameCanvas" width="700" height="400" style="border:1px solid #000000; display: none">
-
-                    </canvas>
-                </div>
             </div>
 
             <div class="mastfoot">
@@ -56,6 +57,7 @@
         </div>
     </div>
 </div>
+
 
 <script src="./collections/Point.js"></script>
 <script src="./collections/Set.js"></script>
@@ -82,6 +84,8 @@
     var game_canvas = document.getElementById('gameCanvas');
     var login_block = document.getElementById('form');
     var login_text = document.getElementById('login_text');
+    var inner_cover = document.getElementById('inner_cover');
+    var site_wrapper = document.getElementById('site_wrapper');
 
     logon.addEventListener('click', function () {
         message.innerHTML = 'Join Button Clicked';
@@ -92,13 +96,21 @@
         var game = new JoinGame(username.value, game_canvas);
         game.join();
 
-        logon.style.display = 'none';
-        username.style.display = 'none';
-        login_block.style.display = 'none';
-        login_text.style.display = 'none';
-        game_canvas.style.display = 'block';
+        //logon.style.display = 'none';
+        //username.style.display = 'none';
+        //login_block.style.display = 'none';
+        //login_text.style.display = 'none';
+        //inner_cover.style.display = 'none';
+        site_wrapper.style.display = 'none';
+        game_canvas.style.display = 'inherit';
+
 
     });
+
+
+    function componet() {
+
+    }
 </script>
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
         integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
