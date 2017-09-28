@@ -2,11 +2,11 @@
  * Represents, and is responsible for the background of the game screen as well as the world border.
  */
 class GameBackground implements Renderable {
-    private gridSize: number = 32; //default grid size is 16 pixels
-    private lineThickness: number = .5;
+    private gridSize: number = 48; //default grid size is 16 pixels
+    private lineThickness: number = 0.5;
     private borderThickness: number = 30;
     private borderColor: string = "#000000";
-    private gridColor: string = "#a8a8a8";
+    private gridColor: string = "#545454";
 
     private player: ClientPlayer;
     private viewWidth: number;
