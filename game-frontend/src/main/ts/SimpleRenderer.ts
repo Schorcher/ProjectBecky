@@ -17,14 +17,14 @@ class SimpleRenderer implements Renderer {
 
     public addRenderable(element: Renderable): void {
         if(element instanceof ClientPlayer) {
-            this.clientPlayer = element;
+            this.clientPlayer = element as ClientPlayer;
         }
         else if(element instanceof OpponentPlayer) {
-            this.opponentPlayers.add(element);
+            this.opponentPlayers.add(element as OpponentPlayer);
             console.log("ADDED OPPONENT");
         }
         else if(element instanceof GameBackground) {
-            this.gameBackground = element;
+            this.gameBackground = element as GameBackground;
         }
     }
 

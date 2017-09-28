@@ -15,4 +15,7 @@ public interface GameEntity {
     float getY_acceleration();
     void setX_acceleration(final float xAcceleration);
     void setY_acceleration(final float yAcceleration);
+
+    void setDecelerating(final boolean decelerating);
+    boolean isDecelerating();
 }

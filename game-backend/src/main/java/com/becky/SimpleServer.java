@@ -122,6 +122,7 @@ public class SimpleServer extends WebSocketServer {
         stateChange.setUsername(json.getString("username"));
         stateChange.setAuthenticationString(json.getString("authenticationString"));
         stateChange.setInputName(json.getString("inputName"));
+        stateChange.setFlag(json.getBoolean("flag"));
 
         //TODO: PHASE 2
         //stateChange.setFlag(json.getBoolean("flag"));
@@ -131,17 +132,26 @@ public class SimpleServer extends WebSocketServer {
 
     private void updatePlayerState(final Player player, final InputStateChange stateChange) {
         final String inputKey = stateChange.getInputName();
+        boolean meHandleIt = false;
         if("w".equals(inputKey)) {
             player.setY_acceleration(-Player.ACCELERATION);
+            meHandleIt = true;
         }
         else if("s".equals(inputKey)) {
             player.setY_acceleration(Player.ACCELERATION);
+            meHandleIt = true;
         }
         if("a".equals(inputKey)) {
             player.setX_acceleration(-Player.ACCELERATION);
+            meHandleIt = true;
         }
         else if("d".equals(inputKey)) {
             player.setX_acceleration(Player.ACCELERATION);
+            meHandleIt = true;
+        }
+
+        if(meHandleIt) {
+            player.setDecelerating(!stateChange.isFlag());
         }
 
         //TODO: In phase 2 update player angles and whether or not player is shooting

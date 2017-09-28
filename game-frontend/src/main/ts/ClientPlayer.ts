@@ -15,6 +15,7 @@ class ClientPlayer implements Player, Updateable, GameEntity {
     private moveRight: boolean;
     private velocity: Point;
     private username: string;
+    private decelerating: boolean = true;
 
     constructor(parent: GameEntity, x: number = 0, y: number = 0, angle: number = 0, username: string) {
         this.position = new Point(x, y);
@@ -77,6 +78,14 @@ class ClientPlayer implements Player, Updateable, GameEntity {
         return this.parent;
     }
 
+    public setDecelerating = (decelerating: boolean): void => {
+        this.decelerating = decelerating;
+    }
+
+    public isDecelerating = (): boolean => {
+        return this.decelerating;
+    }
+
     public draw(context: CanvasRenderingContext2D, screenOrigin: Point): void {
         //the current player is simply drawn in the center of the screen always. Never elsewhere
         //other players will be drawn in the proper position.
@@ -96,7 +105,7 @@ class ClientPlayer implements Player, Updateable, GameEntity {
     public update(elapsedTime: number): void {
         let fracSecond: number = elapsedTime / 1000.0;
 
-        this.updateVelocity(fracSecond);
+        //this.updateVelocity(fracSecond);
         this.capVelocity();
         this.updatePosition(fracSecond);
         this.handleBorderCollision();
@@ -104,35 +113,33 @@ class ClientPlayer implements Player, Updateable, GameEntity {
 
     private updateVelocity(fracSecond: number): void {
         //calculate partial second acceleration
-        let accel:number = this.acceleration * fracSecond;
-
-        //update velocity
-        if(this.moveUp) {
-            this.velocity.addY(-accel);
-        }
-        else if(this.moveDown) {
-            this.velocity.addY(accel);
-        }
-        else {
-            if(this.velocity.getY() < 0) {
-                this.velocity.addY(this.acceleration);
-            }
-            else if(this.velocity.getY() > 0) {
-                this.velocity.addY(-this.acceleration);
-            }
-        }
-        if(this.moveLeft) {
-            this.velocity.addX(-accel);
-        }
-        else if(this.moveRight) {
-            this.velocity.addX(accel);
-        }
-        else {
+        if(this.decelerating) {
             if(this.velocity.getX() < 0) {
-                this.velocity.addX(this.acceleration);
+                this.velocity.addX(Math.min(fracSecond * this.acceleration, this.velocity.getX()));
             }
-            else if(this.velocity.getX() > 0) {
-                this.velocity.addX(-this.acceleration);
+            else {
+                this.velocity.addX(Math.max(-fracSecond * this.acceleration, -this.velocity.getX()));
+            }
+
+            if(this.velocity.getY() < 0) {
+                this.velocity.addY(Math.min(fracSecond * this.acceleration, this.velocity.getY()));
+            }
+            else {
+                this.velocity.addY(Math.max(-fracSecond * this.acceleration, this.velocity.getY()));
+            }
+        }
+        else {
+            if(this.moveLeft) {
+                this.velocity.addX(-fracSecond * this.velocity.getX());
+            }
+            if(this.moveRight) {
+                this.velocity.addX(fracSecond * this.velocity.getX());
+            }
+            if(this.moveUp) {
+                this.velocity.addY(-fracSecond * this.velocity.getY());
+            }
+            if(this.moveDown) {
+                this.velocity.addY(fracSecond * this.velocity.getY());
             }
         }
     }

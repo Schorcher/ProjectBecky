@@ -4,8 +4,8 @@
  */
 class GameClient implements GameEntity {
     //keep these the same as the server. Might have server send message to client with these values in future
-    private worldWidth: number = 10000;
-    private worldHeight: number = 10000;
+    private worldWidth: number = 2000;
+    private worldHeight: number = 2000;
 
     private canvas: HTMLCanvasElement;
     private connection: WebSocket;
@@ -85,6 +85,9 @@ class GameClient implements GameEntity {
 
     private draw = (): void => {
         //this might be all that has to be done. Maybe.
+        let sx = this.player.getXPosition() - this.canvas.width/2;
+        let sy = this.player.getYPosition() - this.canvas.height/2;
+        this.renderer.updateScreenOrigin(new Point(sx, sy));
         this.renderer.draw();
     }
 
@@ -197,6 +200,7 @@ class GameClient implements GameEntity {
         if(meHandleIt) {
             //cancel default browser action
             event.preventDefault();
+            this.player.setDecelerating(false);
 
             //generate a state change event
             let stateChange: InputStateChange = new InputStateChange();
@@ -243,6 +247,7 @@ class GameClient implements GameEntity {
         if(meHandleIt) {
             //cancel default browser action
             event.preventDefault();
+            this.player.setDecelerating(true);
 
             //generate a state change event
             let stateChange: InputStateChange = new InputStateChange();

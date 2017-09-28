@@ -6,7 +6,7 @@ class Set<T> {
     private elements: T[] = [];
 
     public add(element: T): void {
-        length++;
+        this.length++;
         this.elements.push(element);
     }
 

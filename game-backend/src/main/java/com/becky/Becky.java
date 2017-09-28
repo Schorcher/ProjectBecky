@@ -21,7 +21,7 @@ public class Becky implements Runnable {
 
     private Thread thread;
     private final HashMap<String, Player> players = new HashMap<>();
-    private final WorldBorder border = new WorldBorder(1000.0f, 1000.0f);
+    private final WorldBorder border = new WorldBorder(2000.0f, 2000.0f);
 
 
     public static void main(final String[] args) {
