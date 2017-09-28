@@ -52,14 +52,14 @@ class GameBackground implements Renderable {
 
         context.strokeStyle = this.gridColor;
         context.lineWidth = this.lineThickness;
-        //this.drawVerticalLines(context, playerX); //draw vertical grid lines
-        //this.drawHorizontalLines(context, playerY); //draw horizontal grid lines
+        this.drawVerticalLines(context, screenOrigin.getX()); //draw vertical grid lines
+        this.drawHorizontalLines(context, screenOrigin.getY()); //draw horizontal grid lines
         this.drawBorder(context, playerX, playerY); //draw visible parts of border
     }
 
-    private drawVerticalLines(context: CanvasRenderingContext2D, playerX: number): void {
+    private drawVerticalLines(context: CanvasRenderingContext2D, screenX: number): void {
         //determine horizontal offset of first vertical line
-        let offset: number = this.gridSize % (playerX / (this.worldWidth / this.viewWidth));
+        let offset: number = -(screenX % this.gridSize);
 
         context.beginPath();
         for(let xPos: number = offset; xPos < this.viewWidth; xPos += this.gridSize) {
@@ -72,9 +72,9 @@ class GameBackground implements Renderable {
         //might be able to move stroke outside loop before closePath
     }
 
-    private drawHorizontalLines(context: CanvasRenderingContext2D, playerY: number): void {
+    private drawHorizontalLines(context: CanvasRenderingContext2D, screenY: number): void {
         //determine vertical offset of first horizontal line
-        let offset: number = this.gridSize % (playerY / (this.worldHeight / this.viewHeight));
+        let offset: number = -(screenY % this.gridSize);
 
         context.beginPath();
         for(let yPos: number = offset; yPos < this.viewHeight; yPos += this.gridSize) {
