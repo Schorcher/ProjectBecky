@@ -1,3 +1,5 @@
+///<reference path="./collections/Set.ts"/>
+
 /**
  * Represents any game entity. A game entity can be contained within any other
  * game entity, and can contain other game entities.

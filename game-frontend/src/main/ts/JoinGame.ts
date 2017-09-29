@@ -1,3 +1,8 @@
+///<reference path="./networked/InitialServerJoinState.ts"/>
+///<reference path="./networked/UsernameChangeRequest.ts"/>
+///<reference path="./networked/ServerUsernameRequestStatus.ts"/>
+///<reference path="./GameClient.ts"/>
+
 /**
  * This class handles the handshake with the server when the client joins the game
  */

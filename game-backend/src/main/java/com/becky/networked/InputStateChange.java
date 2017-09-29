@@ -1,5 +1,7 @@
 package com.becky.networked;
 
+import org.json.JSONObject;
+
 public class InputStateChange
 {
     private String username;
@@ -7,6 +9,21 @@ public class InputStateChange
     private String inputName;
     private boolean flag;
     private float angle;
+
+    public InputStateChange() {}
+
+    public InputStateChange(final String json) {
+        if(!json.startsWith(InputStateChange.class.getSimpleName())) {
+            throw new IllegalArgumentException("Json String does not define a InputStateChange object.");
+        }
+
+        final JSONObject obj = new JSONObject(json);
+        this.username = obj.getString("username");
+        this.authenticationString = obj.getString("authenticationString");
+        this.inputName = obj.getString("inputName");
+        this.flag = obj.getBoolean("flag");
+        this.angle = (float)obj.getDouble("angle");
+    }
 
     public String getUsername() {
         return username;
@@ -46,5 +63,9 @@ public class InputStateChange
 
     public void setAngle(final float angle) {
         this.angle = angle;
+    }
+
+    public String jsonSerialize() {
+        return InputStateChange.class.getSimpleName() + ":" + new JSONObject(this).toString();
     }
 }

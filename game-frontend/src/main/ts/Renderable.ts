@@ -1,3 +1,5 @@
+///<reference path="./collections/Point.ts"/>
+
 /**
  * This interface represents any object that can be rendered.
  */

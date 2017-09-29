@@ -1,3 +1,12 @@
+///<reference path="./GameEntity.ts"/>
+///<reference path="./ClientPlayer.ts"/>
+///<reference path="./SimpleRenderer.ts"/>
+///<reference path="./GameBackground.ts"/>
+///<reference path="./collections/Set.ts"/>
+///<reference path="./OpponentPlayer.ts"/>
+///<reference path="./networked/ServerPlayerUpdate.ts"/>
+///<reference path="./networked/InputStateChange.ts"/>
+
 /**
  * This class is the base class to the game client itself.
  * This class ultimately contains everything.

@@ -1,3 +1,8 @@
+///<reference path="./Player.ts"/>
+///<reference path="./Updateable.ts"/>
+///<reference path="./GameEntity.ts"/>
+///<reference path="./collections/Point.ts"/>
+
 /**
  * Represents the current player. The avatar being controlled by the user.
  * See OpponentPlayer for the other players.

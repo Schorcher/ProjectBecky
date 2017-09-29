@@ -1,3 +1,8 @@
+///<reference path="./Player.ts"/>
+///<reference path="./Updateable.ts"/>
+///<reference path="./GameEntity.ts"/>
+///<reference path="./collections/Point.ts"/>
+
 /**
  * Represents another player. Not the player on this client.
  */

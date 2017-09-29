@@ -1,3 +1,9 @@
+///<reference path="./Renderer.ts"/>
+///<reference path="./ClientPlayer.ts"/>
+///<reference path="./GameBackground.ts"/>
+///<reference path="./collections/Set.ts"/>
+///<reference path="./OpponentPlayer.ts"/>
+
 /**
  * A simple 2D renderer class.
  */

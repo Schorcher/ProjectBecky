@@ -1,3 +1,6 @@
+///<reference path="./collections/Point.ts"/>
+///<reference path="./Renderable.ts"/>
+
 /**
  * This is the interface for any renderer classes.
  */

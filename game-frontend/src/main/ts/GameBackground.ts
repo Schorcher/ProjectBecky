@@ -1,3 +1,6 @@
+///<reference path="./Renderable.ts"/>
+///<reference path="./ClientPlayer.ts"/>
+
 /**
  * Represents, and is responsible for the background of the game screen as well as the world border.
  */

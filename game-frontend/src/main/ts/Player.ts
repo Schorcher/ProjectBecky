@@ -1,3 +1,5 @@
+///<reference path="./Renderable.ts"/>
+
 /**
  * Represents any player. Either the current player or any opponent player.
  */

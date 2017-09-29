@@ -1,9 +1,24 @@
 package com.becky.networked;
 
+import org.json.JSONObject;
+
 public class UsernameChangeRequest {
     private String oldUsername;
     private String newUsername;
     private String authenticationString;
+
+    public UsernameChangeRequest() {}
+
+    public UsernameChangeRequest(final String json) {
+        if(!json.startsWith(UsernameChangeRequest.class.getSimpleName())) {
+            throw new IllegalArgumentException("Json object does not define a valid UsernameChangeRequest object.");
+        }
+
+        final JSONObject obj = new JSONObject(json);
+        this.oldUsername = obj.getString("oldUsername");
+        this.newUsername = obj.getString("newUsername");
+        this.authenticationString = obj.getString("authenticationString");
+    }
 
     public String getOldUsername() {
         return oldUsername;
@@ -27,5 +42,9 @@ public class UsernameChangeRequest {
 
     public void setAuthenticationString(final String authenticationString) {
         this.authenticationString = authenticationString;
+    }
+
+    public String jsonSerialize() {
+        return UsernameChangeRequest.class.getSimpleName() + ":" + new JSONObject(this).toString();
     }
 }
