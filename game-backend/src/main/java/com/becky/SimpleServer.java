@@ -1,15 +1,15 @@
 package com.becky;
 
-import com.becky.networked.InitialServerJoinState;
-import com.becky.networked.InputStateChange;
-import com.becky.networked.ServerUsernameRequestStatus;
-import com.becky.networked.UsernameChangeRequest;
+import com.becky.networked.*;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.json.JSONObject;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class SimpleServer extends WebSocketServer {
     private final Becky gameInstance;
@@ -22,6 +22,12 @@ public class SimpleServer extends WebSocketServer {
     @Override
     public void onError(final WebSocket webSocket, final Exception e) {
         System.out.println("It done fucked up. Here's your info:" + e.toString());
+
+        final Player player = gameInstance.getPlayerByConnection(webSocket);
+        if(player != null) {
+            sendUserJoinedGameMessage(player.getPlayerUsername(), false);
+            gameInstance.removePlayerByUsername(player.getPlayerUsername());
+        }
     }
 
     @Override
@@ -37,20 +43,26 @@ public class SimpleServer extends WebSocketServer {
         }
         else {
             gameInstance.removePlayerByUsername(player.getPlayerUsername());
+            sendUserJoinedGameMessage(player.getPlayerUsername(), false);
             System.out.println("Player " + player.getPlayerUsername() + " disconnected. Reason: " + s);
         }
     }
 
     @Override
     public void onOpen(final WebSocket webSocket, final ClientHandshake clientHandshake) {
+        //Get player connection info
         final InetSocketAddress remoteAddress = webSocket.getRemoteSocketAddress();
         final String ip = remoteAddress.getHostName();
         final int port = remoteAddress.getPort();
         System.out.println(String.format("Connection received from: %s:%d", ip, port));
 
         //Create and add the player to the game
-        final String username = generateRandomUsername();
-        final String auth = generateAuthToken();
+        String username = StringUtils.generateRandomUsername();
+        while(gameInstance.getPlayerByUsername(username) != null) {
+            //make sure the username is unique
+            username = StringUtils.generateRandomUsername();
+        }
+        final String auth = StringUtils.generateUniqueAuthenticationString();
         final Player player = new Player(username, auth, webSocket);
         gameInstance.addPlayer(player);
 
@@ -58,8 +70,8 @@ public class SimpleServer extends WebSocketServer {
         final InitialServerJoinState initialJoinState = new InitialServerJoinState();
         initialJoinState.setAuthenticationString(auth);
         initialJoinState.setInitialUsername(username);
-        initialJoinState.setInitialLocationX(player.getX_position());
-        initialJoinState.setInitialLocationY(player.getY_position());
+        initialJoinState.setInitialLocationX(player.getXPosition());
+        initialJoinState.setInitialLocationY(player.getYPosition());
 
         //json serialize and transmit the initial join state to the client
         webSocket.send(initialJoinState.jsonSerialize());
@@ -68,89 +80,136 @@ public class SimpleServer extends WebSocketServer {
 
     @Override
     public void onMessage(final WebSocket webSocket, final String message) {
-        System.out.println(message);
-        //is this a username change request
-        if(message.startsWith(UsernameChangeRequest.class.getSimpleName())) {
-            System.out.println("Username Change Request");
-            final UsernameChangeRequest request = new UsernameChangeRequest(message);
-            final Player player = gameInstance.getPlayerByUsername(request.getOldUsername());
-            if(!player.getAuthenticationString().equals(request.getAuthenticationString())) {
-                System.out.println("Bad Auth string..");
-                return; //bad authentication string
+        try {
+            //Player input state has changed
+            if (message.startsWith(InputStateChange.class.getSimpleName())) {
+                handlePlayerInputStateMessage(message);
             }
-            final ServerUsernameRequestStatus status = new ServerUsernameRequestStatus();
-            if(gameInstance.getPlayerByUsername(request.getNewUsername()) == null) {
+            //player has requested a username change
+            else if (message.startsWith(UsernameChangeRequest.class.getSimpleName())) {
+                handlePlayerUsernameChangeRequest(message, webSocket);
+            }
+        }
+        catch(final RuntimeException ex) {
+            System.out.println("OnMessage Error: " + ex.getMessage());
+        }
+    }
+
+    private void handlePlayerUsernameChangeRequest(final String message, final WebSocket webSocket) {
+        final UsernameChangeRequest request = new UsernameChangeRequest(message);
+        final ServerUsernameRequestStatus status = new ServerUsernameRequestStatus();
+
+        try {
+            final Player player = validatePlayerCredentials(request.getOldUsername(), request.getAuthenticationString());
+            if(player.isUsernameFinal()) {
+                status.setStatus("failed");
+                status.setMessage("You already set your username.");
+            }
+            else if(gameInstance.getPlayerByUsername(request.getNewUsername()) == null) {
                 gameInstance.removePlayerByUsername(request.getOldUsername());
                 player.setPlayerUsername(request.getNewUsername());
+                player.setUsernameFinal();
                 gameInstance.addPlayer(player);
                 status.setStatus("success");
                 status.setMessage(request.getNewUsername());
+                sendUserJoinedGameMessage(request.getNewUsername(), true);
+                sendInitialPlayerList(player);
             }
             else {
                 status.setStatus("failed");
                 status.setMessage("Username already exists.");
             }
-            webSocket.send(status.jsonSerialize());
         }
-        else if(message.startsWith(InputStateChange.class.getSimpleName())){
-            final InputStateChange stateChange = new InputStateChange(message);
-            final Player player = gameInstance.getPlayerByUsername(stateChange.getUsername());
-            if(player == null || !player.getAuthenticationString().equals(stateChange.getAuthenticationString())) {
-                return; //bad username or bad authentication string
-            }
+        catch(final RuntimeException ex) {
+            status.setStatus("failed");
+            status.setMessage(ex.getMessage());
+        }
+        webSocket.send(status.jsonSerialize());
+    }
 
-            //update player state based on input
-            updatePlayerState(player, stateChange);
-        }
+    private void handlePlayerInputStateMessage(final String message) {
+        final InputStateChange stateChange = new InputStateChange(message);
+        final Player player = validatePlayerCredentials(stateChange.getUsername(), stateChange.getAuthenticationString());
+
+        //update player state based on input
+        updatePlayerState(player, stateChange);
     }
 
     private void updatePlayerState(final Player player, final InputStateChange stateChange) {
-        final String inputKey = stateChange.getInputName();
-        boolean meHandleIt = false;
-        if("w".equals(inputKey)) {
-            player.setY_acceleration(-Player.ACCELERATION);
-            meHandleIt = true;
+        final char input = stateChange.getInputName().charAt(0);
+        if(stateChange.isFlag()) {
+            switch(input) {
+                case 'a':
+                    player.setXAcceleration(-Player.ACCELERATION);
+                    break;
+                case 'd':
+                    player.setXAcceleration(Player.ACCELERATION);
+                    break;
+                case 'w':
+                    player.setYAcceleration(-Player.ACCELERATION);
+                    break;
+                case 's':
+                    player.setYAcceleration(Player.ACCELERATION);
+                    break;
+            }
         }
-        else if("s".equals(inputKey)) {
-            player.setY_acceleration(Player.ACCELERATION);
-            meHandleIt = true;
-        }
-        if("a".equals(inputKey)) {
-            player.setX_acceleration(-Player.ACCELERATION);
-            meHandleIt = true;
-        }
-        else if("d".equals(inputKey)) {
-            player.setX_acceleration(Player.ACCELERATION);
-            meHandleIt = true;
+        else {
+            switch(input) {
+                case 'a':
+                case 'd':
+                    player.setXAcceleration(0.0f);
+                    break;
+                case 'w':
+                case 's':
+                    player.setYAcceleration(0.0f);
+            }
         }
 
-        if(meHandleIt) {
-            player.setDecelerating(!stateChange.isFlag());
-        }
 
         //TODO: In phase 2 update player angles and whether or not player is shooting
     }
 
-    private static final String CHARACTERS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    private String generateAuthToken() {
-        final StringBuilder builder = new StringBuilder();
-        for(int i = 0; i < 19; i++) {
-            if(i % 4 == 0) {
-                builder.append('-');
-            }
-            else {
-                final int rnd = (int)Math.round(Math.random() * 62);
-                builder.append(CHARACTERS.charAt(rnd));
-            }
+    private Player validatePlayerCredentials(final String username, final String authToken) {
+        final Player player = gameInstance.getPlayerByUsername(username);
+        if(!player.getAuthenticationString().equals(authToken)) {
+            throw new RuntimeException("Bad authentication string.");
         }
-        return builder.toString();
+        return player;
     }
 
-    private String generateRandomUsername() {
-        int random = 0;
-        while(gameInstance.getPlayerByUsername("unnamed" + random) != null) {
-            random = (int)Math.round(Math.random() * 999);
+    private void sendUserJoinedGameMessage(final String joinedUsername, final boolean joined) {
+        final PlayerListChange listChange = new PlayerListChange();
+        listChange.setUsername(joinedUsername);
+        listChange.setJoined(joined);
+        final String jsonMessage = PlayerListChange.class.getSimpleName() + ":" + new JSONObject(listChange).toString();
+
+        final Collection<Player> allPlayers = gameInstance.getAllPlayers();
+        for(final Player player: allPlayers) {
+            if(player.getConnection().isOpen()) {
+                player.getConnection().send(jsonMessage);
+            }
         }
-        return "unnamed" + random;
+    }
+
+    private void sendInitialPlayerList(final Player dest) {
+        final Collection<Player> allPlayers = gameInstance.getAllPlayers();
+        final List<ServerPlayerUpdate> updates = new ArrayList<>();
+        for(final Player player: allPlayers) {
+            if(player.equals(dest)) {
+                continue;
+            }
+
+            final ServerPlayerUpdate update = new ServerPlayerUpdate(player);
+            updates.add(update);
+        }
+
+        final InitialPlayerList initialPlayerList = new InitialPlayerList();
+        final ServerPlayerUpdate[] serverPlayerUpdates = new ServerPlayerUpdate[updates.size()];
+        initialPlayerList.setPlayers(serverPlayerUpdates);
+        updates.toArray(serverPlayerUpdates);
+        final JSONObject obj = new JSONObject(initialPlayerList);
+        if(dest.getConnection().isOpen()) {
+            dest.getConnection().send(InitialPlayerList.class.getSimpleName() + ":" + obj.toString());
+        }
     }
 }

@@ -5,5 +5,7 @@
     <option name="scopeName" value="Module 'game-frontend'" />
     <option name="hasOutDirectory" value="true" />
     <option name="outDirectory" value="game-frontend/src/site/js" />
+    <option name="showAllErrors" value="true" />
+    <option name="versionType" value="EMBEDDED" />
   </component>
 </project>

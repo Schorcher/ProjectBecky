@@ -62,20 +62,32 @@ public class WorldBorder {
     }
 
     public void keepEntityInBorder(final GameEntity entity) {
-        final int xPosition = entity.getX_position();
-        if(xPosition < 0) {
-            entity.setX_position(0);
+        final float xPosition = entity.getXPosition();
+        if(xPosition < 0.0f) {
+            entity.setXPosition(1.0f);
+            if(entity.getXAcceleration() < 0.0f) {
+                entity.setXAcceleration(0.0f);
+            }
         }
         else if(xPosition > currentX) {
-            entity.setX_position((int)currentX);
+            entity.setXPosition(currentX - 1.0f);
+            if(entity.getXAcceleration() > 0.0f) {
+                entity.setXAcceleration(0.0f);
+            }
         }
 
-        final int yPosition = entity.getY_position();
+        final float yPosition = entity.getYPosition();
         if(yPosition < 0) {
-            entity.setY_position(0);
+            entity.setYPosition(1.0f);
+            if(entity.getYAcceleration() < 0.0f) {
+                entity.setYAcceleration(0.0f);
+            }
         }
         else if(yPosition > currentY) {
-            entity.setY_position((int)currentY);
+            entity.setYPosition(currentY - 1.0f);
+            if(entity.getYAcceleration() > 0.0f) {
+                entity.setYAcceleration(0.0f);
+            }
         }
     }
 }

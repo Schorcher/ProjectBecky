@@ -92,6 +92,7 @@ class GameBackground implements Renderable {
 
     private drawBorder(context: CanvasRenderingContext2D, playerX: number, playerY: number): void {
         let centerScreen: Point = new Point(this.viewWidth/2, this.viewHeight/2);
+        let thicknessOffset: number = this.borderThickness/2;
 
         //convert world-space coordinates of border corners into screen-space coordinates
         let upperLeft: Point = new Point(centerScreen.getX() - playerX,
@@ -110,18 +111,18 @@ class GameBackground implements Renderable {
 
         //top line
         if(upperLeft.getY() > 0 && upperLeft.getY() < this.viewHeight) {
-            context.moveTo(upperLeft.getX(), upperLeft.getY());
-            context.lineTo(upperRight.getX(), upperRight.getY());
+            context.moveTo(upperLeft.getX() - thicknessOffset, upperLeft.getY());
+            context.lineTo(upperRight.getX() + thicknessOffset, upperRight.getY());
         }
         //right line
         if(upperRight.getX() > 0 && upperRight.getX() < this.viewWidth) {
-            context.moveTo(upperRight.getX(), upperRight.getY());
-            context.lineTo(lowerRight.getX(), lowerRight.getY());
+            context.moveTo(upperRight.getX(), upperRight.getY() + thicknessOffset);
+            context.lineTo(lowerRight.getX(), lowerRight.getY() - thicknessOffset);
         }
         //bottom line
         if(lowerLeft.getY() > 0 && lowerLeft.getY() < this.viewHeight) {
-            context.moveTo(lowerRight.getX(), lowerRight.getY());
-            context.lineTo(lowerLeft.getX(), lowerLeft.getY());
+            context.moveTo(lowerRight.getX() + thicknessOffset, lowerRight.getY());
+            context.lineTo(lowerLeft.getX() - thicknessOffset, lowerLeft.getY());
         }
         //left line
         if(upperLeft.getX() > 0 && upperLeft.getX() < this.viewWidth) {

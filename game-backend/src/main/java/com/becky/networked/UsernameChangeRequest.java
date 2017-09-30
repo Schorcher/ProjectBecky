@@ -10,11 +10,15 @@ public class UsernameChangeRequest {
     public UsernameChangeRequest() {}
 
     public UsernameChangeRequest(final String json) {
+        final int jsonStartIndex = json.indexOf('{');
+        if(jsonStartIndex == -1) {
+            throw new IllegalArgumentException("Invalid JSON Object");
+        }
         if(!json.startsWith(UsernameChangeRequest.class.getSimpleName())) {
             throw new IllegalArgumentException("Json object does not define a valid UsernameChangeRequest object.");
         }
 
-        final JSONObject obj = new JSONObject(json);
+        final JSONObject obj = new JSONObject(json.substring(jsonStartIndex));
         this.oldUsername = obj.getString("oldUsername");
         this.newUsername = obj.getString("newUsername");
         this.authenticationString = obj.getString("authenticationString");

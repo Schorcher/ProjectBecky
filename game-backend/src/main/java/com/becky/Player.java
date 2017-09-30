@@ -4,15 +4,15 @@ import org.java_websocket.WebSocket;
 import java.awt.geom.Point2D;
 
 public class Player implements GameEntity {
-    public static final float MAX_VELOCITY = 200.0f;
-    public static final float ACCELERATION = 150.0f;
+    public static final float MAX_VELOCITY = 600.0f;
+    public static final float ACCELERATION = 1800.0f;
     private final Point2D.Float position = new Point2D.Float(0.0f, 0.0f);
     private final Point2D.Float velocity = new Point2D.Float(0.0f, 0.0f);
     private final Point2D.Float acceleration = new Point2D.Float(0.0f, 0.0f);
-    private boolean decelerating = true;
     private String playerUsername;
     private final WebSocket connection;
     private final String authenticationString;
+    private boolean usernameFinal = false;
 
     public Player(final String playerUsername, final String authenticationString, final WebSocket connection) {
         this.playerUsername = playerUsername;
@@ -37,119 +37,122 @@ public class Player implements GameEntity {
     }
 
     @Override
-    public int getX_position() {
-        return Math.round(position.x);
+    public float getXPosition() {
+        return this.position.x;
     }
 
     @Override
-    public void setX_position(final int x_position) {
-        this.position.x = x_position;
+    public void setXPosition(final float position) {
+        this.position.x = position;
     }
 
     @Override
-    public int getY_position() {
-        return Math.round(this.position.y);
+    public float getYPosition() {
+        return this.position.y;
     }
 
     @Override
-    public void setY_position(final int y_position) {
-        this.position.y = y_position;
+    public void setYPosition(final float position) {
+        this.position.y = position;
     }
 
     @Override
-    public float getX_velocity() {
+    public float getXVelocity() {
         return this.velocity.x;
     }
 
     @Override
-    public void setX_velocity(final float x_velocity) {
-        this.velocity.x = x_velocity;
+    public void setXVelocity(final float velocity) {
+        this.velocity.x = velocity;
     }
 
     @Override
-    public float getY_velocity() {
+    public float getYVelocity() {
         return velocity.y;
     }
 
     @Override
-    public void setY_velocity(final float y_velocity) {
-        this.velocity.y = y_velocity;
+    public void setYVelocity(final float velocity) {
+        this.velocity.y = velocity;
     }
 
     @Override
-    public float getX_acceleration() {
+    public float getXAcceleration() {
         return this.acceleration.x;
     }
 
     @Override
-    public void setX_acceleration(final float accelaration) {
+    public void setXAcceleration(final float accelaration) {
         this.acceleration.x = accelaration;
     }
 
     @Override
-    public float getY_acceleration() {
+    public float getYAcceleration() {
         return this.acceleration.y;
     }
 
     @Override
-    public void setY_acceleration(final float accelaration) {
+    public void setYAcceleration(final float accelaration) {
         this.acceleration.y = accelaration;
     }
 
-    @Override
-    public void setDecelerating(final boolean decelerating) {
-         this.decelerating = decelerating;
+    public void setUsernameFinal() {
+        this.usernameFinal = true;
     }
 
-    @Override
-    public boolean isDecelerating() {
-        return this.decelerating;
+    public boolean isUsernameFinal() {
+        return this.usernameFinal;
     }
-
 
     public void tick(final long elapsedTime) {
-        if(decelerating) {
-            final float timeMultiplier = elapsedTime / 1000.0f;
-            final float absX = Math.abs(this.velocity.x) * timeMultiplier;
-            final float absY = Math.abs(this.velocity.y) * timeMultiplier;
-            if(this.velocity.x < 0) {
-                this.velocity.x += absX;
-                if(this.velocity.x > 0) {
-                    this.velocity.x = 0;
+        final float fraction = elapsedTime/1000.0f;
+
+        //floats don't do well with ==
+        //x component
+        if(Math.abs(this.acceleration.x) < 0.05f) {
+            //decelerating
+            if(this.velocity.x > 0.0f) {
+                this.velocity.x -= Player.ACCELERATION * fraction;
+                if(this.velocity.x < 0.0f) {
+                    this.velocity.x = 0.0f;
                 }
             }
             else {
-                this.velocity.x -= absX;
-                if(this.velocity.x < 0) {
-                    this.velocity.x = 0;
+                this.velocity.x += Player.ACCELERATION * fraction;
+                if(this.velocity.x > 0.0f) {
+                    this.velocity.x = 0.0f;
                 }
             }
-
-            if(this.velocity.y < 0) {
-                this.velocity.y += absY;
-                if(this.velocity.y > 0) {
-                    this.velocity.y = 0;
-                }
-            }
-            else {
-                this.velocity.y -= absY;
-                if(this.velocity.y < 0) {
-                    this.velocity.y = 0;
-                }
-            }
-
-            this.position.x += timeMultiplier * this.velocity.x;
-            this.position.y += timeMultiplier * this.velocity.y;
         }
         else {
-            final float multiplier = elapsedTime / 1000.0f;
-            this.velocity.x += multiplier * this.acceleration.x;
-            this.velocity.y += multiplier * this.acceleration.y;
-            capVelocity();
-            this.position.x += multiplier * this.velocity.x;
-            this.position.y += multiplier * this.velocity.y;
-            System.out.println(this.velocity.x + " " + this.velocity.y);
+            //accelerating
+            this.velocity.x += this.acceleration.x * fraction;
         }
+
+        //y component
+        if(Math.abs(this.acceleration.y) < 0.5f) {
+            //decelerating
+            if(this.velocity.y > 0) {
+                this.velocity.y -= Player.ACCELERATION * fraction;
+                if(this.velocity.y < 0.0f) {
+                    this.velocity.y = 0.0f;
+                }
+            }
+            else {
+                this.velocity.y += Player.ACCELERATION * fraction;
+                if(this.velocity.y > 0.0f) {
+                    this.velocity.y = 0.0f;
+                }
+            }
+        }
+        else {
+            //accelerating
+            this.velocity.y += this.acceleration.y * fraction;
+        }
+
+        capVelocity();
+        this.position.x += this.velocity.x * fraction;
+        this.position.y += this.velocity.y * fraction;
     }
 
     private void capVelocity() {

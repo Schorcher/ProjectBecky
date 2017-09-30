@@ -21,7 +21,7 @@ public class Becky implements Runnable {
 
     private Thread thread;
     private final HashMap<String, Player> players = new HashMap<>();
-    private final WorldBorder border = new WorldBorder(2000.0f, 2000.0f);
+    private final WorldBorder border = new WorldBorder(4000.0f, 4000.0f);
 
 
     public static void main(final String[] args) {
@@ -55,7 +55,7 @@ public class Becky implements Runnable {
         }
 
         final JSONArray serializedData = new JSONArray(Arrays.asList(updates));
-        final String data = serializedData.toString();
+        final String data = ServerPlayerUpdate.class.getSimpleName() + "[]:" + serializedData.toString();
         for(final Player player: values) {
             player.getConnection().send(data);
         }
@@ -102,6 +102,10 @@ public class Becky implements Runnable {
             }
         }
         return null;
+    }
+
+    public Collection<Player> getAllPlayers() {
+        return this.players.values();
     }
 
     public void removePlayerByUsername(final String userName){

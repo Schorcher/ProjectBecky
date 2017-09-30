@@ -6,6 +6,7 @@
 ///<reference path="./OpponentPlayer.ts"/>
 ///<reference path="./networked/ServerPlayerUpdate.ts"/>
 ///<reference path="./networked/InputStateChange.ts"/>
+///<reference path="./networked/PlayerListChange.ts"/>
 
 /**
  * This class is the base class to the game client itself.
@@ -13,8 +14,8 @@
  */
 class GameClient implements GameEntity {
     //keep these the same as the server. Might have server send message to client with these values in future
-    private worldWidth: number = 2000;
-    private worldHeight: number = 2000;
+    private worldWidth: number = 4000;
+    private worldHeight: number = 4000;
 
     private canvas: HTMLCanvasElement;
     private connection: WebSocket;
@@ -54,6 +55,21 @@ class GameClient implements GameEntity {
             entities.add(this.opponents[i]);
         }
         return entities;
+    }
+
+    public setInitialPlayers = (initialPlayers: InitialPlayerList): void => {
+        let players: ServerPlayerUpdate[] = initialPlayers.players;
+        if(!players) {
+            return;
+        }
+        let length: number = players.length;
+        for(let i = 0; i < length; i++) {
+            let player: ServerPlayerUpdate = players[i];
+            let opponent = new OpponentPlayer(this, player.playerName);
+            opponent.setPosition(player.posX, player.posY);
+            this.renderer.addRenderable(opponent);
+            this.opponents.add(opponent);
+        }
     }
 
     private frameStart: number;
@@ -142,61 +158,54 @@ class GameClient implements GameEntity {
 
     private handleConnectionError = (message: string) => {
         this.playing = false;
-        console.log(message);
     }
 
     private handleMessageFromServer(message: string): void {
-        if(message.charAt(0) === '[' && message.charAt(message.length - 1) === ']') {
-            let updates = JSON.parse(message) as ServerPlayerUpdate[];
+        let object = null;
+        if((object = ServerPlayerUpdate.getValidArrayFromJson(message)) !== null) {
+            let updates: ServerPlayerUpdate[] = object as ServerPlayerUpdate[];
 
             // Update current players
             for(let i = 0; i < updates.length; i++) {
                 let serverUpdate: ServerPlayerUpdate = updates[i];
 
+                //is the player update for me
                 if(this.player.getUsername() === serverUpdate.playerName) {
                     this.player.setPosition(serverUpdate.posX, serverUpdate.posY);
                 }
                 else {
-                    let found: boolean = false;
+                    //the player update is likely for another joined player
                     for(let j = 0; j < this.opponents.length; j++) {
                         let opponent: OpponentPlayer = this.opponents.get(j);
                         if(opponent.getUsername() === serverUpdate.playerName) {
                             opponent.setPosition(serverUpdate.posX, serverUpdate.posY);
-                            found = true;
                             break;
                         }
                     }
-                    if(!found) {
-                        console.log("NEW PLAYER: " + serverUpdate.playerName);
-                        let opponent: OpponentPlayer = new OpponentPlayer(this, serverUpdate.playerName);
-                        opponent.setPosition(serverUpdate.posX, serverUpdate.posY);
-                        this.opponents.add(opponent);
-                        this.renderer.addRenderable(opponent);
-                    }
                 }
             }
-            // Check for removed players
-            for (let i = 0; i < this.opponents.length; i++) {
-                let opponent: OpponentPlayer = this.opponents.get(i);
-                let found: boolean = false;
-                for (let j = 0; j < updates.length; j++) {
-                    let serverUpdate: ServerPlayerUpdate = updates[j];
-                    if (opponent.getUsername() === serverUpdate.playerName) {
-                        found = true;
+        }
+        else if((object = PlayerListChange.getValidObjectFromJson(message)) !== null) {
+            let change: PlayerListChange = object as PlayerListChange;
+            if(change.joined) {
+                //player joined game, so add them to the renderer and opponents list
+                let opponent: OpponentPlayer = new OpponentPlayer(this, change.username);
+                this.opponents.add(opponent);
+                this.renderer.addRenderable(opponent);
+            }
+            else {
+                //player joined game, so remove from renderer and opponents list
+                let username: string = change.username;
+                for(let i = 0; i < this.opponents.length; i++) {
+                    let opponent: OpponentPlayer = this.opponents.get(i);
+                    if(opponent.getUsername() === username) {
+                        //found the opponent, so remove
+                        this.renderer.removeRenderable(opponent);
+                        this.opponents.remove(opponent);
                         break;
                     }
                 }
-                if (!found) {
-                    console.log('Player not sent by server: ' + opponent.getUsername());
-                    console.log('Removing player: ' + opponent.getUsername());
-                    this.opponents.remove(opponent);
-                    this.renderer.removeRenderable(opponent);
-                    if (!this.opponents.contains(opponent)) {
-                        console.log('Removed player successfully!')
-                    }
-                }
             }
-
         }
     }
 
@@ -204,34 +213,47 @@ class GameClient implements GameEntity {
         let meHandleIt: boolean = false;
         let changeType: string = "w";
 
+        //cancel default browser action
+        event.preventDefault();
+
         if(event.keyCode == 87) //w key
         {
+            if(this.player.getMovingUp()) {
+                return;
+            }
             meHandleIt = true;
             changeType = "w";
             this.player.setMoveUp(true);
         }
         else if(event.keyCode == 83) //s key
         {
+            if(this.player.getMovingDown()) {
+                return;
+            }
             meHandleIt = true;
             changeType = "s";
             this.player.setMoveDown(true);
         }
         else if(event.keyCode == 65) //a key
         {
+            if(this.player.getMovingLeft()) {
+                return;
+            }
             meHandleIt = true;
             changeType = "a";
             this.player.setMoveLeft(true);
         }
         else if(event.keyCode == 68) //d key
         {
+            if(this.player.getMovingRight()) {
+                return;
+            }
             meHandleIt = true;
             changeType = "d";
             this.player.setMoveRight(true);
         }
 
         if(meHandleIt) {
-            //cancel default browser action
-            event.preventDefault();
             this.player.setDecelerating(false);
 
             //generate a state change event
@@ -242,7 +264,7 @@ class GameClient implements GameEntity {
             stateChange.authenticationString = this.authenticationString;
 
             //send that state change event to the server as a json object
-            let json: string = JSON.stringify(stateChange);
+            let json: string = "InputStateChange:" + JSON.stringify(stateChange);
             this.connection.send(json);
         }
     }
@@ -251,34 +273,47 @@ class GameClient implements GameEntity {
         let meHandleIt: boolean = false;
         let changeType: string = "";
 
+        //cancel default browser action
+        event.preventDefault();
+
         if(event.keyCode == 87) //w key
         {
+            if(!this.player.getMovingUp()) {
+                return;
+            }
             meHandleIt = true;
             changeType = "w";
             this.player.setMoveUp(false);
         }
         else if(event.keyCode == 83) //s key
         {
+            if(!this.player.getMovingDown()) {
+                return;
+            }
             meHandleIt = true;
             changeType = "s";
             this.player.setMoveDown(false);
         }
         else if(event.keyCode == 65) //a key
         {
+            if(!this.player.getMovingLeft()) {
+                return;
+            }
             meHandleIt = true;
             changeType = "a";
             this.player.setMoveLeft(false);
         }
         else if(event.keyCode == 68) //d key
         {
+            if(!this.player.getMovingRight()) {
+                return;
+            }
             meHandleIt = true;
             changeType = "d";
             this.player.setMoveRight(false);
         }
 
         if(meHandleIt) {
-            //cancel default browser action
-            event.preventDefault();
             this.player.setDecelerating(true);
 
             //generate a state change event
@@ -289,7 +324,7 @@ class GameClient implements GameEntity {
             stateChange.authenticationString = this.authenticationString;
 
             //send that state change event to the server as a json object
-            let json: string = JSON.stringify(stateChange);
+            let json: string = "InputStateChange:" + JSON.stringify(stateChange);
             this.connection.send(json);
         }
     }

@@ -59,6 +59,22 @@ class ClientPlayer implements Player, Updateable, GameEntity {
         //TODO: Aim player towards mouse (phase 2)
     }
 
+    public getMovingUp = (): boolean => {
+        return this.moveUp;
+    }
+
+    public getMovingDown = (): boolean => {
+        return this.moveDown;
+    }
+
+    public getMovingLeft = (): boolean => {
+        return this.moveLeft;
+    }
+
+    public getMovingRight = (): boolean => {
+        return this.moveRight;
+    }
+
     public setMoveUp = (up: boolean): void => {
         this.moveUp = up;
     }

@@ -5,15 +5,19 @@ import org.json.JSONObject;
 public class InitialServerJoinState {
     private String initialUsername;
     private String authenticationString;
-    private int initialLocationX;
-    private int initialLocationY;
+    private float initialLocationX;
+    private float initialLocationY;
 
     public InitialServerJoinState(final String json) {
+        final int jsonStartIndex = json.indexOf('{');
+        if(jsonStartIndex == -1) {
+            throw new IllegalArgumentException("Invalid JSON Object");
+        }
         if(!json.startsWith(InitialServerJoinState.class.getSimpleName())) {
             throw new IllegalArgumentException("The given JSON object is not a valid InitialServerJoinState object.");
         }
 
-        final JSONObject obj = new JSONObject(json);
+        final JSONObject obj = new JSONObject(json.substring(jsonStartIndex));
         this.initialUsername = obj.getString("initialUsername");
         this.authenticationString = obj.getString("authenticationString");
         this.initialLocationX = obj.getInt("initialLocationX");
@@ -38,19 +42,19 @@ public class InitialServerJoinState {
         this.authenticationString = authenticationString;
     }
 
-    public int getInitialLocationX() {
+    public float getInitialLocationX() {
         return initialLocationX;
     }
 
-    public void setInitialLocationX(final int initialLocationX) {
+    public void setInitialLocationX(final float initialLocationX) {
         this.initialLocationX = initialLocationX;
     }
 
-    public int getInitialLocationY() {
+    public float getInitialLocationY() {
         return initialLocationY;
     }
 
-    public void setInitialLocationY(final int initialLocationY) {
+    public void setInitialLocationY(final float initialLocationY) {
         this.initialLocationY = initialLocationY;
     }
 

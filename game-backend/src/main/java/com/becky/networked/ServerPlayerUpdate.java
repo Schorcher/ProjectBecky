@@ -5,18 +5,22 @@ import org.json.JSONObject;
 
 public class ServerPlayerUpdate
 {
-    private int posX;
-    private int posY;
+    private float posX;
+    private float posY;
     private String playerName;
 
     public ServerPlayerUpdate() {}
 
     public ServerPlayerUpdate(final String json) {
+        final int jsonStartIndex = json.indexOf('{');
+        if(jsonStartIndex == -1) {
+            throw new IllegalArgumentException("Invalid JSON Object");
+        }
         if(!json.startsWith(ServerPlayerUpdate.class.getSimpleName())) {
             throw new IllegalArgumentException("Json object does not define a ServerPlayerUpdate object.");
         }
 
-        final JSONObject obj = new JSONObject(json);
+        final JSONObject obj = new JSONObject(json.substring(jsonStartIndex));
         this.posX = obj.getInt("posX");
         this.posY = obj.getInt("posY");
         this.playerName = obj.getString("playerName");
@@ -39,12 +43,12 @@ public class ServerPlayerUpdate
     //}
 
     public ServerPlayerUpdate(final Player player) {
-        this.posX = player.getX_position();
-        this.posY = player.getY_position();
+        this.posX = player.getXPosition();
+        this.posY = player.getYPosition();
         this.playerName = player.getPlayerUsername();
     }
 
-    public int getPosX() {
+    public float getPosX() {
         return posX;
     }
 
@@ -52,7 +56,7 @@ public class ServerPlayerUpdate
         this.posX = posX;
     }
 
-    public int getPosY() {
+    public float getPosY() {
         return posY;
     }
 

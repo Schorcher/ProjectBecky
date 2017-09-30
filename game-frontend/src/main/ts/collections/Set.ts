@@ -13,12 +13,19 @@ class Set<T> {
     public remove(element: T): boolean {
         for(let i: number = 0; i < this.length; i++) {
             if(this.elements[i] == element) {
-                length--;
+                this.length--;
                 this.elements.splice(i, 1);
                 return true;
             }
         }
         return false;
+    }
+
+    public removeAt(index: number): void {
+        if(index < 0 || index >= this.length) {
+            return;
+        }
+        this.elements.splice(index, 1);
     }
 
     public get(index: number): T {

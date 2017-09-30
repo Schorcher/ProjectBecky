@@ -13,16 +13,21 @@ public class InputStateChange
     public InputStateChange() {}
 
     public InputStateChange(final String json) {
+        final int jsonStartIndex = json.indexOf('{');
+        if(jsonStartIndex == -1) {
+            throw new IllegalArgumentException("Invalid JSON Object");
+        }
         if(!json.startsWith(InputStateChange.class.getSimpleName())) {
             throw new IllegalArgumentException("Json String does not define a InputStateChange object.");
         }
 
-        final JSONObject obj = new JSONObject(json);
+        final JSONObject obj = new JSONObject(json.substring(jsonStartIndex));
+        System.out.println(json.substring(jsonStartIndex));
         this.username = obj.getString("username");
         this.authenticationString = obj.getString("authenticationString");
-        this.inputName = obj.getString("inputName");
-        this.flag = obj.getBoolean("flag");
-        this.angle = (float)obj.getDouble("angle");
+        this.inputName = obj.optString("inputName", "");
+        this.flag = obj.optBoolean("flag", false);
+        this.angle = (float)obj.optDouble("angle", this.angle);
     }
 
     public String getUsername() {

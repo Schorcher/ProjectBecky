@@ -9,7 +9,7 @@ class Renderable {
      * @param context The rendering context to perform drawing operations
      * @param screenOrigin The world-space position of the top left corner of the screen.
      */
-    draw(context: CanvasRenderingContext2D, screenOrigin: Point): void;
+    draw(context: CanvasRenderingContext2D, screenOrigin: Point): void {}
 
     /**
      * Draws this renderable to the canvas using the provided rendering context.
