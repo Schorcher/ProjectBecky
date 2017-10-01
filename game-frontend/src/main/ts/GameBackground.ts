@@ -6,7 +6,7 @@
  */
 class GameBackground implements Renderable {
     private gridSize: number = 48; //default grid size is 16 pixels
-    private lineThickness: number = 0.5;
+    private lineThickness: number = 1;
     private borderThickness: number = 30;
     private borderColor: string = "#000000";
     private gridColor: string = "#545454";
@@ -53,10 +53,19 @@ class GameBackground implements Renderable {
             playerY = this.player.getYPosition();
         }
 
-        context.strokeStyle = this.gridColor;
+        //draw the background color
+        let b: number[] = this.calculateBackgroundColor();
+        console.log(b);
+
+        context.fillStyle = "rgb(" + b[0] + "," + b[1] + "," + b[2] + ")";
+        context.fillRect(0, 0, this.viewWidth, this.viewHeight);
+
+        context.strokeStyle = "rgb(0, 0, 0)";
+        context.globalAlpha = 0.03;
         context.lineWidth = this.lineThickness;
         this.drawVerticalLines(context, screenOrigin.getX()); //draw vertical grid lines
         this.drawHorizontalLines(context, screenOrigin.getY()); //draw horizontal grid lines
+        context.globalAlpha = 1.0;
         this.drawBorder(context, playerX, playerY); //draw visible parts of border
     }
 
@@ -88,6 +97,14 @@ class GameBackground implements Renderable {
         context.closePath();
         //might have to move begin and close path inside loop.
         //might be able to move stroke outside loop before closePath
+    }
+
+    private calculateBackgroundColor(): number[] {
+        let r: number = Math.round((this.player.getXPosition() * 255) / this.worldWidth);
+        let g: number = Math.round((this.player.getYPosition() * 255) / this.worldHeight);
+        let b: number = 255 - Math.max(r, g);
+
+        return [r, g, b] as number[];
     }
 
     private drawBorder(context: CanvasRenderingContext2D, playerX: number, playerY: number): void {

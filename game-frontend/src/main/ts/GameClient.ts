@@ -278,44 +278,30 @@ class GameClient implements GameEntity {
 
         if(event.keyCode == 87) //w key
         {
-            if(!this.player.getMovingUp()) {
-                return;
-            }
             meHandleIt = true;
             changeType = "w";
             this.player.setMoveUp(false);
         }
         else if(event.keyCode == 83) //s key
         {
-            if(!this.player.getMovingDown()) {
-                return;
-            }
             meHandleIt = true;
             changeType = "s";
             this.player.setMoveDown(false);
         }
         else if(event.keyCode == 65) //a key
         {
-            if(!this.player.getMovingLeft()) {
-                return;
-            }
             meHandleIt = true;
             changeType = "a";
             this.player.setMoveLeft(false);
         }
         else if(event.keyCode == 68) //d key
         {
-            if(!this.player.getMovingRight()) {
-                return;
-            }
             meHandleIt = true;
             changeType = "d";
             this.player.setMoveRight(false);
         }
 
         if(meHandleIt) {
-            this.player.setDecelerating(true);
-
             //generate a state change event
             let stateChange: InputStateChange = new InputStateChange();
             stateChange.inputName = changeType;
