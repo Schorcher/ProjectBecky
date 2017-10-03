@@ -7,6 +7,7 @@
 ///<reference path="./networked/ServerPlayerUpdate.ts"/>
 ///<reference path="./networked/InputStateChange.ts"/>
 ///<reference path="./networked/PlayerListChange.ts"/>
+///<reference path="./Bullet.ts"/>
 
 /**
  * This class is the base class to the game client itself.
@@ -21,6 +22,7 @@ class GameClient implements GameEntity {
     private connection: WebSocket;
     private player: ClientPlayer;
     private opponents: Set<OpponentPlayer> = new Set<OpponentPlayer>();
+    private bullets: Set<Bullet> = new Set<Bullet>();
     private renderer: SimpleRenderer;
     private playing: boolean = true;
     private username: string;
@@ -72,6 +74,29 @@ class GameClient implements GameEntity {
         }
     }
 
+    public setInitialBullets = (initialBullets: BulletInfo[]): void => {
+        let length: number = initialBullets.length;
+        for(let i = 0; i < length; i++) {
+            let ib: BulletInfo = initialBullets[i];
+            let p: Player = null;
+            if(ib.bulletOwner === this.player.getUsername()) {
+                p = this.player;
+            }
+            else {
+                p = this.getOpponentPlayerByUsername(ib.bulletOwner);
+            }
+
+            if(p === null) {
+                continue;
+            }
+            else {
+                let b: Bullet = new Bullet(p, new Point(ib.positionX, ib.positionY), new Point(ib.velocityX, ib.velocityY));
+                this.renderer.add(b);
+                this.bullets.add(b);
+            }
+        }
+    }
+
     private frameStart: number;
     public run = (): void => {
         this.frameStart = Date.now();
@@ -96,6 +121,16 @@ class GameClient implements GameEntity {
 
         //wait out the remainder to limit frame rate to 30 fps
         setTimeout(this.execGameFrame, waitTime);
+    }
+
+    private getOpponentPlayerByUsername = (username: string): OpponentPlayer => {
+        let length: number = this.opponents.length;
+        for(let i = 0; i < length; i++) {
+            if(this.opponents.get(i).getUsername() === username) {
+                return this.opponents.get(i);
+            }
+        }
+        return null;
     }
 
     private update = (elapsedTime: number): void => {
@@ -206,6 +241,9 @@ class GameClient implements GameEntity {
                     }
                 }
             }
+        }
+        else if((object = BulletInfo.getValidArrayFromJson(message)) !== null) {
+            let bulletInfos: BulletInfo[] = object as BulletInfo[];
         }
     }
 

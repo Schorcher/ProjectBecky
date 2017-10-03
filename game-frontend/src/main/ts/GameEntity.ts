@@ -16,4 +16,21 @@ interface GameEntity {
      * @returns {GameEntity}
      */
     getParentEntity(): GameEntity;
+
+    /**
+     * Gets the X position of this game entity.
+     */
+    getXPosition(): number;
+
+    /**
+     * Gets the Y position of this game entity.
+     */
+    getYPosition(): number;
+
+    /**
+     * Sets the position of the game entity;
+     * @param x
+     * @param y
+     */
+    setPosition(x: number, y:number): void;
 }

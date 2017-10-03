@@ -20,7 +20,7 @@ class InitialServerJoinState {
         //"InitialServerJoinState:" is 23 characters
         let beginning: string = json.substr(0, Math.min(length, 23));
         if(beginning === "InitialServerJoinState:") {
-            let jsonStr: string = json.substring(23, json.length);
+            let jsonStr: string = json.substring(23, length);
             return JSON.parse(jsonStr) as InitialServerJoinState;
         }
         else {

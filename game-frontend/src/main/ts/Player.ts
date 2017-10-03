@@ -3,21 +3,11 @@
 /**
  * Represents any player. Either the current player or any opponent player.
  */
-interface Player extends Renderable {
+interface Player extends Renderable, GameEntity {
     /**
      * Gets the username of the player
      */
     getUsername(): string;
-
-    /**
-     * Gets the current global X position of the player.
-     */
-    getXPosition(): number;
-
-    /**
-     * Gets the current global Y position of the player.
-     */
-    getYPosition(): number;
 
     /**
      * Gets the current look direction of the player in RADIANS.
