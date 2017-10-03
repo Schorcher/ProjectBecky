@@ -2,19 +2,16 @@
 ///<reference path="./ClientPlayer.ts"/>
 ///<reference path="./GameBackground.ts"/>
 ///<reference path="./collections/Set.ts"/>
-///<reference path="./OpponentPlayer.ts"/>
-///<reference path="./Bullet.ts"/>
 
 /**
  * A simple 2D renderer class.
  */
 class SimpleRenderer implements Renderer {
     private clientPlayer: ClientPlayer;
-    private opponentPlayers: Set<OpponentPlayer> = new Set<OpponentPlayer>();
-    private bullets: Set<Bullet> = new Set<Bullet>();
     private gameBackground: GameBackground;
     private renderingContext: CanvasRenderingContext2D;
     private screenOrigin: Point;
+    private elements: Set<Renderable> = new Set<Renderable>();
 
     constructor(context: CanvasRenderingContext2D) {
         this.renderingContext = context;
@@ -25,15 +22,11 @@ class SimpleRenderer implements Renderer {
         if(element instanceof ClientPlayer) {
             this.clientPlayer = element as ClientPlayer;
         }
-        else if(element instanceof OpponentPlayer) {
-            this.opponentPlayers.add(element as OpponentPlayer);
-            console.log("ADDED OPPONENT");
-        }
         else if(element instanceof GameBackground) {
             this.gameBackground = element as GameBackground;
         }
-        else if(element instanceof Bullet) {
-            this.bullets.add(element as Bullet);
+        else {
+            this.elements.add(element);
         }
     }
 
@@ -46,12 +39,8 @@ class SimpleRenderer implements Renderer {
             this.gameBackground = null;
             return true;
         }
-        if (this.opponentPlayers.contains(element as OpponentPlayer)) {
-            this.opponentPlayers.remove(element as OpponentPlayer);
-        }
-        else if(this.bullets.contains(element as Bullet)) {
-            this.bullets.remove(element as Bullet);
-        }
+
+        return this.elements.remove(element);
     }
 
     public updateScreenOrigin(screenOrigin: Point): void {
@@ -66,15 +55,8 @@ class SimpleRenderer implements Renderer {
         this.gameBackground.draw(this.renderingContext, this.screenOrigin);
 
         //render opponents
-        for(let i = 0; i < this.opponentPlayers.length; i++) {
-            let p: OpponentPlayer = this.opponentPlayers.get(i);
-            p.draw(this.renderingContext, this.screenOrigin);
-        }
-
-        //render bullets
-        for(let i = 0; i < this.bullets.length; i++) {
-            let b: Bullet = this.bullets.get(i);
-            b.draw(this.renderingContext, this.screenOrigin);
+        for(let i = 0; i < this.elements.length; i++) {
+            this.elements.get(i).draw(this.renderingContext, this.screenOrigin);
         }
 
         //render the client player

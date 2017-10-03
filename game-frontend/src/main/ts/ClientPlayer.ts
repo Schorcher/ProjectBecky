@@ -22,6 +22,8 @@ class ClientPlayer implements Player, Updateable, GameEntity {
     private velocity: Point;
     private username: string;
     private decelerating: boolean = true;
+    private score: number;
+    private health: number;
 
     constructor(parent: GameEntity, x: number = 0, y: number = 0, angle: number = 0, username: string) {
         this.position = new Point(x, y);
@@ -114,6 +116,22 @@ class ClientPlayer implements Player, Updateable, GameEntity {
 
     public isShooting = (): boolean => {
         return this.shooting;
+    }
+
+    public setScore = (score: number): void => {
+        this.score = score;
+    }
+
+    public getScore = (): number => {
+        return this.score;
+    }
+
+    public setHealth = (health: number): void => {
+        this.health = health;
+    }
+
+    public getHealth = () => {
+        return this.health;
     }
 
     public draw(context: CanvasRenderingContext2D, screenOrigin: Point): void {
