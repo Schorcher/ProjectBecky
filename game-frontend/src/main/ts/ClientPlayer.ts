@@ -18,6 +18,7 @@ class ClientPlayer implements Player, Updateable, GameEntity {
     private moveDown: boolean;
     private moveLeft: boolean;
     private moveRight: boolean;
+    private shooting: boolean;
     private velocity: Point;
     private username: string;
     private decelerating: boolean = true;
@@ -105,6 +106,14 @@ class ClientPlayer implements Player, Updateable, GameEntity {
 
     public isDecelerating = (): boolean => {
         return this.decelerating;
+    }
+
+    public setShooting = (shooting: boolean): void => {
+        this.shooting = shooting;
+    }
+
+    public isShooting = (): boolean => {
+        return this.shooting;
     }
 
     public draw(context: CanvasRenderingContext2D, screenOrigin: Point): void {

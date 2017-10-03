@@ -1,9 +1,17 @@
 package com.becky;
 
-import com.becky.networked.*;
+import com.becky.networked.BulletInfo;
+import com.becky.networked.ClientInputStateUpdate;
+import com.becky.networked.InitialPlayerList;
+import com.becky.networked.InitialServerJoinState;
+import com.becky.networked.PlayerListChange;
+import com.becky.networked.ServerPlayerUpdate;
+import com.becky.networked.ServerUsernameRequestStatus;
+import com.becky.networked.UsernameChangeRequest;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.net.InetSocketAddress;
@@ -82,7 +90,7 @@ public class SimpleServer extends WebSocketServer {
     public void onMessage(final WebSocket webSocket, final String message) {
         try {
             //Player input state has changed
-            if (message.startsWith(InputStateChange.class.getSimpleName())) {
+            if (message.startsWith(ClientInputStateUpdate.class.getSimpleName())) {
                 handlePlayerInputStateMessage(message);
             }
             //player has requested a username change
@@ -114,6 +122,7 @@ public class SimpleServer extends WebSocketServer {
                 status.setMessage(request.getNewUsername());
                 sendUserJoinedGameMessage(request.getNewUsername(), true);
                 sendInitialPlayerList(player);
+                sendInitialBulletsList(player);
             }
             else {
                 status.setStatus("failed");
@@ -128,45 +137,32 @@ public class SimpleServer extends WebSocketServer {
     }
 
     private void handlePlayerInputStateMessage(final String message) {
-        final InputStateChange stateChange = new InputStateChange(message);
-        final Player player = validatePlayerCredentials(stateChange.getUsername(), stateChange.getAuthenticationString());
-
-        //update player state based on input
-        updatePlayerState(player, stateChange);
+        final ClientInputStateUpdate update = new ClientInputStateUpdate(message);
+        final Player p = gameInstance.getPlayerByUsername(update.getUsername());
+        if(!p.getAuthenticationString().equals(update.getAuthString())) {
+            throw new RuntimeException("Bad authentication string.");
+        }
+        updatePlayerState(p, update);
     }
 
-    private void updatePlayerState(final Player player, final InputStateChange stateChange) {
-        final char input = stateChange.getInputName().charAt(0);
-        if(stateChange.isFlag()) {
-            switch(input) {
-                case 'a':
-                    player.setXAcceleration(-Player.ACCELERATION);
-                    break;
-                case 'd':
-                    player.setXAcceleration(Player.ACCELERATION);
-                    break;
-                case 'w':
-                    player.setYAcceleration(-Player.ACCELERATION);
-                    break;
-                case 's':
-                    player.setYAcceleration(Player.ACCELERATION);
-                    break;
-            }
+    private void updatePlayerState(final Player player, final ClientInputStateUpdate stateChange) {
+        player.setXAcceleration(0.0f);
+        player.setYAcceleration(0.0f);
+        if(stateChange.isMovingUp()) {
+            player.setYAcceleration(-Player.ACCELERATION);
         }
-        else {
-            switch(input) {
-                case 'a':
-                case 'd':
-                    player.setXAcceleration(0.0f);
-                    break;
-                case 'w':
-                case 's':
-                    player.setYAcceleration(0.0f);
-            }
+        if(stateChange.isMovingDown()) {
+            player.setYAcceleration(player.getYAcceleration() + Player.ACCELERATION);
+        }
+        if(stateChange.isMovingLeft()) {
+            player.setXAcceleration(-Player.ACCELERATION);
+        }
+        if(stateChange.isMovingRight()) {
+            player.setXAcceleration(player.getXAcceleration() + Player.ACCELERATION);
         }
 
-
-        //TODO: In phase 2 update player angles and whether or not player is shooting
+        player.setFiringWeapon(stateChange.isShooting());
+        player.setAngles(stateChange.getAngle());
     }
 
     private Player validatePlayerCredentials(final String username, final String authToken) {
@@ -210,6 +206,25 @@ public class SimpleServer extends WebSocketServer {
         final JSONObject obj = new JSONObject(initialPlayerList);
         if(dest.getConnection().isOpen()) {
             dest.getConnection().send(InitialPlayerList.class.getSimpleName() + ":" + obj.toString());
+        }
+    }
+
+    private void sendInitialBulletsList(final Player dest) {
+        final Collection<Player> allPlayers = gameInstance.getAllPlayers();
+        final List<BulletInfo> bulletInfosList = new ArrayList<>();
+        for(final Player player: allPlayers) {
+            final List<Bullet> bullets = player.getBulletsList();
+            for(final Bullet bullet: bullets) {
+                final BulletInfo info = new BulletInfo(player.getPlayerUsername(), Bullet.STATE_NEW_BULLET,
+                    bullet.getBulletId(), bullet.getXVelocity(), bullet.getYVelocity(), bullet.getXPosition(), bullet.getYPosition());
+                bulletInfosList.add(info);
+            }
+        }
+
+        final JSONArray jsonArray = new JSONArray(bulletInfosList);
+        final String serializedMessage = "BulletInfo[]:" + jsonArray.toString();
+        if(dest.getConnection().isOpen()) {
+            dest.getConnection().send(serializedMessage);
         }
     }
 }

@@ -5,7 +5,7 @@
 ///<reference path="./collections/Set.ts"/>
 ///<reference path="./OpponentPlayer.ts"/>
 ///<reference path="./networked/ServerPlayerUpdate.ts"/>
-///<reference path="./networked/InputStateChange.ts"/>
+///<reference path="./networked/ClientInputStateUpdate.ts"/>
 ///<reference path="./networked/PlayerListChange.ts"/>
 ///<reference path="./Bullet.ts"/>
 
@@ -28,6 +28,7 @@ class GameClient implements GameEntity {
     private username: string;
     private authenticationString: string;
     private background: GameBackground;
+    private numFrames: number = 0;
 
     /**
      * Creates a new GameClient instance.
@@ -78,20 +79,14 @@ class GameClient implements GameEntity {
         let length: number = initialBullets.length;
         for(let i = 0; i < length; i++) {
             let ib: BulletInfo = initialBullets[i];
-            let p: Player = null;
-            if(ib.bulletOwner === this.player.getUsername()) {
-                p = this.player;
-            }
-            else {
-                p = this.getOpponentPlayerByUsername(ib.bulletOwner);
-            }
+            let p: Player = this.getPlayerByUsername(ib.owner);
 
             if(p === null) {
                 continue;
             }
-            else {
-                let b: Bullet = new Bullet(p, new Point(ib.positionX, ib.positionY), new Point(ib.velocityX, ib.velocityY));
-                this.renderer.add(b);
+            else if(this.getBulletEntityById(ib.bulletId) === null){
+                let b: Bullet = new Bullet(p, ib.bulletId, new Point(ib.positionX, ib.positionY), new Point(ib.velocityX, ib.velocityY));
+                this.renderer.addRenderable(b);
                 this.bullets.add(b);
             }
         }
@@ -111,6 +106,12 @@ class GameClient implements GameEntity {
         this.update(elapsedTime);
         this.draw();
 
+        //Once every 4 frames send the current state of the client input to the server
+        if(this.numFrames % 4 === 0) {
+            this.sendInputState();
+        }
+        this.numFrames++;
+
         //30 fps is 33 milliseconds per frame
         //if frame took less than 34 millis to complete then waitout the remaining time
         let waitTime: number = 16.6 - elapsedTime;
@@ -121,16 +122,6 @@ class GameClient implements GameEntity {
 
         //wait out the remainder to limit frame rate to 30 fps
         setTimeout(this.execGameFrame, waitTime);
-    }
-
-    private getOpponentPlayerByUsername = (username: string): OpponentPlayer => {
-        let length: number = this.opponents.length;
-        for(let i = 0; i < length; i++) {
-            if(this.opponents.get(i).getUsername() === username) {
-                return this.opponents.get(i);
-            }
-        }
-        return null;
     }
 
     private update = (elapsedTime: number): void => {
@@ -149,6 +140,20 @@ class GameClient implements GameEntity {
         let sy = this.player.getYPosition() - this.canvas.height/2;
         this.renderer.updateScreenOrigin(new Point(sx, sy));
         this.renderer.draw();
+    }
+
+    private sendInputState = (): void => {
+        let state: ClientInputStateUpdate = new ClientInputStateUpdate();
+        state.movingDown = this.player.getMovingDown();
+        state.movingUp = this.player.getMovingUp();
+        state.movingLeft = this.player.getMovingLeft();
+        state.movingRight = this.player.getMovingRight();
+        state.angle = this.player.getAngle();
+        state.shooting = this.player.isShooting();
+        state.username = this.player.getUsername();
+        state.authString = this.authenticationString;
+
+        this.connection.send("ClientInputStateUpdate:" + JSON.stringify(state));
     }
 
     /**
@@ -170,6 +175,9 @@ class GameClient implements GameEntity {
     private initInput(): void {
         document.addEventListener("keydown", this.handleKeyDownInput);
         document.addEventListener("keyup", this.handleKeyUpInput);
+        document.addEventListener("mouseup", this.handleMouseUp);
+        document.addEventListener("mousedown", this.handleMouseDown);
+        document.addEventListener("mousemove", this.handleMouseMove);
     }
 
     private initRenderer(): void {
@@ -193,6 +201,7 @@ class GameClient implements GameEntity {
 
     private handleConnectionError = (message: string) => {
         this.playing = false;
+        //TODO: Display join screen and a connection error string
     }
 
     private handleMessageFromServer(message: string): void {
@@ -244,112 +253,123 @@ class GameClient implements GameEntity {
         }
         else if((object = BulletInfo.getValidArrayFromJson(message)) !== null) {
             let bulletInfos: BulletInfo[] = object as BulletInfo[];
+            let length: number = bulletInfos.length;
+
+            for(let i = 0; i < length; i++) {
+                let bulletInfo: BulletInfo = bulletInfos[i];
+                if(bulletInfo.state === 0) {//new bullet
+                    let p: Player = this.getPlayerByUsername(bulletInfo.owner);
+                    if(p === null) {
+                        continue;
+                    }
+                    let position: Point = new Point(bulletInfo.positionX, bulletInfo.positionY);
+                    let velocity: Point = new Point(bulletInfo.velocityX, bulletInfo.velocityY);
+                    let bullet: Bullet = new Bullet(p, bulletInfo.bulletId, position, velocity);
+                    if(p !== this.player) {
+                        bullet.setFillColor("#ff543c");
+                    }
+                    this.bullets.add(bullet);
+                    this.renderer.addRenderable(bullet);
+                }
+                else if(bulletInfo.state === 1) { //updated bullet
+                    let bullet: Bullet = this.getBulletEntityById(bulletInfo.bulletId);
+                    if(bullet === null) {
+                        return;
+                    }
+                    bullet.setPosition(bulletInfo.positionX, bulletInfo.positionY);
+                }
+                else if(bulletInfo.state === 2) { //dead bullet
+                    let bullet: Bullet = this.getBulletEntityById(bulletInfo.bulletId);
+                    if(bullet !== null) {
+                        this.renderer.removeRenderable(bullet);
+                        this.bullets.remove(bullet);
+                    }
+                }
+            }
         }
     }
 
     private handleKeyDownInput = (event: KeyboardEvent): void => {
-        let meHandleIt: boolean = false;
-        let changeType: string = "w";
-
         //cancel default browser action
         event.preventDefault();
 
-        if(event.keyCode == 87) //w key
-        {
-            if(this.player.getMovingUp()) {
-                return;
-            }
-            meHandleIt = true;
-            changeType = "w";
+        if(event.keyCode == 87) { //w key
             this.player.setMoveUp(true);
         }
-        else if(event.keyCode == 83) //s key
-        {
-            if(this.player.getMovingDown()) {
-                return;
-            }
-            meHandleIt = true;
-            changeType = "s";
+        else if(event.keyCode == 83) { //s key
             this.player.setMoveDown(true);
         }
-        else if(event.keyCode == 65) //a key
-        {
-            if(this.player.getMovingLeft()) {
-                return;
-            }
-            meHandleIt = true;
-            changeType = "a";
+        else if(event.keyCode == 65) { //a key
             this.player.setMoveLeft(true);
         }
-        else if(event.keyCode == 68) //d key
-        {
-            if(this.player.getMovingRight()) {
-                return;
-            }
-            meHandleIt = true;
-            changeType = "d";
+        else if(event.keyCode == 68) { //d key
             this.player.setMoveRight(true);
-        }
-
-        if(meHandleIt) {
-            this.player.setDecelerating(false);
-
-            //generate a state change event
-            let stateChange: InputStateChange = new InputStateChange();
-            stateChange.inputName = changeType;
-            stateChange.flag = true;
-            stateChange.username = this.username;
-            stateChange.authenticationString = this.authenticationString;
-
-            //send that state change event to the server as a json object
-            let json: string = "InputStateChange:" + JSON.stringify(stateChange);
-            this.connection.send(json);
         }
     }
 
     private handleKeyUpInput = (event: KeyboardEvent): void => {
-        let meHandleIt: boolean = false;
-        let changeType: string = "";
-
         //cancel default browser action
         event.preventDefault();
 
-        if(event.keyCode == 87) //w key
-        {
-            meHandleIt = true;
-            changeType = "w";
+        if(event.keyCode == 87) { //w key
             this.player.setMoveUp(false);
         }
-        else if(event.keyCode == 83) //s key
-        {
-            meHandleIt = true;
-            changeType = "s";
+        else if(event.keyCode == 83) { //s key
             this.player.setMoveDown(false);
         }
-        else if(event.keyCode == 65) //a key
-        {
-            meHandleIt = true;
-            changeType = "a";
+        else if(event.keyCode == 65) { //a key
             this.player.setMoveLeft(false);
         }
-        else if(event.keyCode == 68) //d key
-        {
-            meHandleIt = true;
-            changeType = "d";
+        else if(event.keyCode == 68) { //d key
             this.player.setMoveRight(false);
         }
+    }
 
-        if(meHandleIt) {
-            //generate a state change event
-            let stateChange: InputStateChange = new InputStateChange();
-            stateChange.inputName = changeType;
-            stateChange.flag = false;
-            stateChange.username = this.username;
-            stateChange.authenticationString = this.authenticationString;
-
-            //send that state change event to the server as a json object
-            let json: string = "InputStateChange:" + JSON.stringify(stateChange);
-            this.connection.send(json);
+    private handleMouseDown = (event: MouseEvent): void => {
+        if(event.button === 0) {
+            this.player.setShooting(true);
         }
     }
+
+    private handleMouseUp = (event: MouseEvent): void => {
+        if(event.button === 0) {
+            this.player.setShooting(false);
+        }
+    }
+
+    private handleMouseMove = (event: MouseEvent): void => {
+        let deltaX: number = event.clientX - this.canvas.width/2;
+        let deltaY: number = event.clientY - this.canvas.height/2;
+        let angle: number = Math.atan2(deltaY, deltaX);
+        this.player.setAngle(angle);
+    }
+
+    private getPlayerByUsername = (username: string): Player => {
+        if(this.player.getUsername() === username) {
+            return this.player;
+        }
+
+        let length: number = this.opponents.length;
+        for(let i = 0; i < length; i++) {
+            if(this.opponents.get(i).getUsername() === username) {
+                return this.opponents.get(i);
+            }
+        }
+        return null;
+    }
+
+    private getBulletEntityById = (id: number): Bullet => {
+        let length: number = this.bullets.length;
+        for(let i = 0; i < length; i++) {
+            if(this.bullets.get(i).getId() === id) {
+                return this.bullets.get(i);
+            }
+        }
+
+        return null;
+    }
+
+    public getXPosition():number { return 0; }
+    public getYPosition():number { return 0; }
+    public setPosition(x: number, y:number) {}
 }

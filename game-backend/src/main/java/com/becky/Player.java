@@ -2,6 +2,9 @@ package com.becky;
 
 import org.java_websocket.WebSocket;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class Player implements GameEntity {
     public static final float MAX_VELOCITY = 600.0f;
@@ -13,6 +16,10 @@ public class Player implements GameEntity {
     private final WebSocket connection;
     private final String authenticationString;
     private boolean usernameFinal = false;
+    private float angles;
+    private Gun playerGun = new DefaultGun(this);
+    private final List<Bullet> bulletsList = new ArrayList<>();
+    private boolean firingWeapon = false;
 
     public Player(final String playerUsername, final String authenticationString, final WebSocket connection) {
         this.playerUsername = playerUsername;
@@ -96,6 +103,16 @@ public class Player implements GameEntity {
         this.acceleration.y = accelaration;
     }
 
+    @Override
+    public void setAngles(final float angles) {
+        this.angles = angles;
+    }
+
+    @Override
+    public float getAngles() {
+        return this.angles;
+    }
+
     public void setUsernameFinal() {
         this.usernameFinal = true;
     }
@@ -104,7 +121,50 @@ public class Player implements GameEntity {
         return this.usernameFinal;
     }
 
+    public Gun getGun() {
+        return this.playerGun;
+    }
+
+    public void setGun(final Gun gun) {
+        this.playerGun = gun;
+    }
+
+    public List<Bullet> getBulletsList() {
+        return new ArrayList<>(this.bulletsList);
+    }
+
+    public void addBullet(final Bullet bullet) {
+        this.bulletsList.add(bullet);
+    }
+
+    public void removeBullet(final Bullet bullet) {
+        this.bulletsList.remove(bullet);
+    }
+
+    public void setFiringWeapon(final boolean firing) {
+        this.firingWeapon = firing;
+    }
+
+    @Override
     public void tick(final long elapsedTime) {
+        tickVelocity(elapsedTime);
+        tickShooting();
+        tickBullets(elapsedTime);
+    }
+
+    private void tickBullets(final long elapsedTime) {
+        for(final Bullet bullet: bulletsList) {
+            bullet.tick(elapsedTime);
+        }
+    }
+
+    private void tickShooting() {
+        if(firingWeapon) {
+            playerGun.fire();
+        }
+    }
+
+    private void tickVelocity(final long elapsedTime) {
         final float fraction = elapsedTime/1000.0f;
 
         //floats don't do well with ==

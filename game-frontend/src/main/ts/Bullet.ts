@@ -7,7 +7,7 @@
  * The bullet class
  */
 class Bullet implements Renderable, Updateable, GameEntity {
-    private static outlineThickness = 8;
+    private static outlineThickness = 4     /2;
     private static fillRadius = 12;
     private static fillDiameter = Bullet.fillRadius * 2;
     private static totalRadius = Bullet.fillRadius + Bullet.outlineThickness;
@@ -17,11 +17,17 @@ class Bullet implements Renderable, Updateable, GameEntity {
     private velocity: Point;
     private fillColor: string = "#a8ff96";
     private strokeColor: string = "#000000";
+    private id: number;
 
-    constructor(owner: Player, position: Point, velocity: Point) {
+    constructor(owner: Player, id: number, position: Point, velocity: Point) {
         this.owner = owner;
         this.position = new Point(position.getX(), position.getY());
         this.velocity = new Point(velocity.getX(), velocity.getY());
+        this.id = id;
+    }
+
+    public getId(): number {
+        return this.id;
     }
 
     public setFillColor(color: string): void {

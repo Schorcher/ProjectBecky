@@ -68,11 +68,17 @@ public class WorldBorder {
             if(entity.getXAcceleration() < 0.0f) {
                 entity.setXAcceleration(0.0f);
             }
+            if(entity.getXVelocity() < 0.0f) {
+                entity.setXVelocity(0.0f);
+            }
         }
         else if(xPosition > currentX) {
             entity.setXPosition(currentX - 1.0f);
             if(entity.getXAcceleration() > 0.0f) {
                 entity.setXAcceleration(0.0f);
+            }
+            if(entity.getXVelocity() > 0.0f) {
+                entity.setXVelocity(0.0f);
             }
         }
 
@@ -82,11 +88,17 @@ public class WorldBorder {
             if(entity.getYAcceleration() < 0.0f) {
                 entity.setYAcceleration(0.0f);
             }
+            if(entity.getYVelocity() < 0.0f) {
+                entity.setYVelocity(0.0f);
+            }
         }
         else if(yPosition > currentY) {
             entity.setYPosition(currentY - 1.0f);
             if(entity.getYAcceleration() > 0.0f) {
                 entity.setYAcceleration(0.0f);
+            }
+            if(entity.getYVelocity() > 0.0f) {
+                entity.setYVelocity(0.0f);
             }
         }
     }

@@ -2,8 +2,9 @@
  * Networked class carrying bullet info from the server to the client
  */
 class BulletInfo {
-    public bulletOwner: string;
-    public bulletState: number;
+    public owner: string;
+    public state: number;
+    public bulletId: number;
     public velocityX: number;
     public velocityY: number;
     public positionX: number;

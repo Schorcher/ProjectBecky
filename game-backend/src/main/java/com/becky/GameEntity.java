@@ -15,4 +15,9 @@ public interface GameEntity {
     float getYAcceleration();
     void setXAcceleration(final float xAcceleration);
     void setYAcceleration(final float yAcceleration);
+
+    void setAngles(final float angles);
+    float getAngles();
+
+    void tick(final long elapsedTime);
 }

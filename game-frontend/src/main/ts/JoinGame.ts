@@ -14,9 +14,11 @@ class JoinGame {
     private canvas: HTMLCanvasElement;
     private initialJoinState: InitialServerJoinState;
     private initialList: InitialPlayerList = null;
+    private initialBullets: BulletInfo[] = null;
     private usernameStatus: ServerUsernameRequestStatus = null;
     private usernameStatusReceived: boolean = false;
     private initialListReceived: boolean = false;
+    private initialBulletsReceived: boolean = false;
 
     constructor(username: string, canvas: HTMLCanvasElement) {
         this.username = username;
@@ -77,33 +79,43 @@ class JoinGame {
     }
 
     private handleUsernameMessage(message: string): void {
-        let username: ServerUsernameRequestStatus = ServerUsernameRequestStatus.getValidJsonObject(message);
-        if (username === null) {
-            let initialPlayers: InitialPlayerList = InitialPlayerList.getValidObjectFromJson(message);
-            if(initialPlayers === null) {
+        let object;
+        if((object = ServerUsernameRequestStatus.getValidJsonObject(message)) !== null) {
+            let username: ServerUsernameRequestStatus = object as ServerUsernameRequestStatus;
+            if(username.status === 'failed') {
+                this.resetJoinGame("Username rejected by server.");
+                //TODO: Display the error message in the gui
                 return;
             }
             else {
-                this.initialList = initialPlayers;
-                this.initialListReceived = true;
+                this.usernameStatus = username;
+                this.usernameStatusReceived = true;
             }
         }
-        else if (username.status === 'failed') {
-            this.resetJoinGame("Username rejected by server.");
-            //TODO: Display the error message in the gui
-            return;
+        else if((object = InitialPlayerList.getValidObjectFromJson(message)) !== null) {
+            let initialPlayers: InitialPlayerList = object as InitialPlayerList;
+            this.initialList = initialPlayers;
+            this.initialListReceived = true;
         }
-        else {
-            this.usernameStatusReceived = true;
-            this.usernameStatus = username;
+        else if((object = BulletInfo.getValidArrayFromJson(message)) !== null) {
+            let bulletInfos: BulletInfo[] = object as BulletInfo[];
+            for(let i = 0; i < bulletInfos.length; i++) {
+                if(bulletInfos[i].state != 0) {
+                    //this message isn't a proper initial bullet info state message
+                    return;
+                }
+            }
+            this.initialBullets = bulletInfos;
+            this.initialBulletsReceived = true;
         }
 
         //create the client and kill the current listener
         //this empty listener is so we don't receive more events
-        if(this.usernameStatusReceived && this.initialListReceived) {
+        if(this.usernameStatusReceived && this.initialListReceived && this.initialBulletsReceived) {
             this.connection.onmessage = (event: MessageEvent) => {};
-            let gameClient: GameClient = new GameClient(this.canvas, this.connection, username.message, this.initialJoinState.authenticationString);
+            let gameClient: GameClient = new GameClient(this.canvas, this.connection, this.usernameStatus.message, this.initialJoinState.authenticationString);
             gameClient.setInitialPlayers(this.initialList);
+            gameClient.setInitialBullets(this.initialBullets);
             gameClient.run();
         }
     }
@@ -111,6 +123,8 @@ class JoinGame {
     private resetJoinGame(reason: string): void {
         this.initialList = null;
         this.usernameStatus = null;
+        this.initialBullets = null;
+        this.initialBulletsReceived = false;
         this.usernameStatusReceived = false;
         this.initialListReceived = false;
         if(this.connection.readyState == WebSocket.OPEN || this.connection.readyState == WebSocket.CONNECTING) {

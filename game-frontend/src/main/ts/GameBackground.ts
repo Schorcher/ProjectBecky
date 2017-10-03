@@ -55,7 +55,6 @@ class GameBackground implements Renderable {
 
         //draw the background color
         let b: number[] = this.calculateBackgroundColor();
-        console.log(b);
 
         context.fillStyle = "rgb(" + b[0] + "," + b[1] + "," + b[2] + ")";
         context.fillRect(0, 0, this.viewWidth, this.viewHeight);
