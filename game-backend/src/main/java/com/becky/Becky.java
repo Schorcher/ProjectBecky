@@ -1,7 +1,6 @@
 package com.becky;
 
-import com.becky.networked.BulletInfo;
-import com.becky.networked.ServerPlayerUpdate;
+import com.becky.networked.*;
 import org.java_websocket.WebSocket;
 import org.json.JSONArray;
 
@@ -14,11 +13,12 @@ import java.util.*;
  */
 public class Becky implements Runnable {
     public static final int MAX_TPS = 20;
+    public static final int MAX_PLAYERS = 100;
 
     private Thread thread;
     private final HashMap<String, Player> players = new HashMap<>();
     private final WorldBorder border = new WorldBorder(4000.0f, 4000.0f);
-
+    private final BulletCollisionDetector bulletCollisionDetector = new BulletCollisionDetector(MAX_PLAYERS);
 
     public static void main(final String[] args) {
         final InetSocketAddress socketAddress = new InetSocketAddress(3000);
@@ -42,6 +42,52 @@ public class Becky implements Runnable {
             final List<Bullet> bullets = player.getBulletsList();
             for(final Bullet bullet: bullets) {
                 border.keepEntityInBorder(bullet);
+            }
+
+            final Map<Bullet, Player> playerBulletCollisions = this.bulletCollisionDetector.getBulletCollisions();
+            final Set<Bullet> keys = playerBulletCollisions.keySet();
+            for(final Bullet bullet: keys) {
+                final Player p = playerBulletCollisions.get(bullet);
+                p.setHealth(p.getHealth() - bullet.getDamage());
+
+                //If the bullet killed the player, the shooter receives a 10th of the dead player's points
+                //Also remove that player from that game
+                //Also send a points update message to the scoring player
+                if(p.getHealth() == 0) {
+                    final Player attacker = bullet.getOwner();
+                    attacker.addScore(p.getScore()/10);
+                    this.removePlayerByUsername(p.getPlayerUsername());
+
+                    //send points update to killer
+                    final PointsUpdate pointsUpdate = new PointsUpdate();
+                    pointsUpdate.setNumPoints(attacker.getScore());
+                    pointsUpdate.setUsername(attacker.getPlayerUsername());
+                    if(attacker.getConnection().isOpen()) {
+                        attacker.getConnection().send(pointsUpdate.jsonSerialize());
+                    }
+
+                    //Send bullet updates so clients know to remove all remaining bullets from the player
+                    final List<Bullet> deadBullets = p.getBulletsList();
+                    for(final Bullet bullet: deadBullets) {
+                        bullet.setState(Bullet.STATE_DEAD_BULLET);
+                    }
+                    final String jsonMessage = "BulletInfo[]:" + new JSONArray(deadBullets).toString();
+                    final Collection<Player> allPlayers = this.getAllPlayers();
+                    for(final Player pl: allPlayers) {
+                        if(pl.getConnection().isOpen()) {
+                            pl.getConnection().send(jsonMessage);
+                        }
+                    }
+                }
+
+                //Send a player health message to the inflicted player
+                final PlayerHealthMessage playerHealthMessage = new PlayerHealthMessage();
+                playerHealthMessage.setUsername(p.getPlayerUsername());
+                playerHealthMessage.setAffectedBy(bullet.getOwner().getPlayerUsername());
+                playerHealthMessage.setHealth(p.getHealth());
+                if(p.getConnection().isOpen()) {
+                    p.getConnection().send(playerHealthMessage.jsonSerialize());
+                }
             }
         }
     }
@@ -153,6 +199,7 @@ public class Becky implements Runnable {
 
     public void addPlayer(final Player player) {
         players.put(player.getPlayerUsername().intern(), player);
+        this.bulletCollisionDetector.setPlayers(players.values());
     }
 
     public Player getPlayerByUsername(final String userName) {
@@ -174,5 +221,6 @@ public class Becky implements Runnable {
 
     public void removePlayerByUsername(final String userName){
         players.remove(userName.intern());
+        this.bulletCollisionDetector.setPlayers(players.values());
     }
 }

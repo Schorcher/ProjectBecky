@@ -229,29 +229,7 @@ class GameClient implements GameEntity {
                 }
             }
         }
-        else if((object = PlayerListChange.getValidObjectFromJson(message)) !== null) {
-            let change: PlayerListChange = object as PlayerListChange;
-            if(change.joined) {
-                //player joined game, so add them to the renderer and opponents list
-                let opponent: OpponentPlayer = new OpponentPlayer(this, change.username);
-                this.opponents.add(opponent);
-                this.renderer.addRenderable(opponent);
-            }
-            else {
-                //player joined game, so remove from renderer and opponents list
-                let username: string = change.username;
-                for(let i = 0; i < this.opponents.length; i++) {
-                    let opponent: OpponentPlayer = this.opponents.get(i);
-                    if(opponent.getUsername() === username) {
-                        //found the opponent, so remove
-                        this.renderer.removeRenderable(opponent);
-                        this.opponents.remove(opponent);
-                        break;
-                    }
-                }
-            }
-        }
-        else if((object = BulletInfo.getValidArrayFromJson(message)) !== null) {
+        if((object = BulletInfo.getValidArrayFromJson(message)) !== null) {
             let bulletInfos: BulletInfo[] = object as BulletInfo[];
             let length: number = bulletInfos.length;
 
@@ -287,6 +265,52 @@ class GameClient implements GameEntity {
                 }
             }
         }
+        else if((object = PlayerListChange.getValidObjectFromJson(message)) !== null) {
+            //It should be noted that the server only sends this message when a client disconnects from the server
+            //or when the server force closes a connection
+            let change: PlayerListChange = object as PlayerListChange;
+            if(change.joined) {
+                //player joined game, so add them to the renderer and opponents list
+                let opponent: OpponentPlayer = new OpponentPlayer(this, change.username);
+                this.opponents.add(opponent);
+                this.renderer.addRenderable(opponent);
+            }
+            else {
+                //player left game, so remove from renderer and opponents list
+                let username: string = change.username;
+                let player: Player = this.getPlayerByUsername(username);
+                if(player instanceof ClientPlayer) {
+                    this.connection.close(1000, "Disconnected");
+                    this.resetGamePage("Disconnected from server.");
+                }
+                else {
+                    let opponent: OpponentPlayer = player as OpponentPlayer;
+                    this.renderer.removeRenderable(opponent);
+                    this.opponents.remove(opponent);
+                }
+            }
+        }
+        else if((object = PointsUpdate.getValidObjectFromJson(message)) !== null) {
+            let points: PointsUpdate = object as PointsUpdate;
+            if(this.player.getUsername() === points.username) {
+                this.player.setScore(points.numPoints);
+            }
+        }
+        else if((object = PlayerHealthMessage.getValidObjectFromJson(message)) !== null) {
+            let health: PlayerHealthMessage = object as PlayerHealthMessage;
+            if(this.player.getUsername() === health.username) {
+                this.player.setHealth(health.health);
+            }
+
+            if(health.health < 1) {
+                this.connection.close(1000, "Player died.");
+                this.resetGamePage("Killed by " + health.affectedBy + ". You had " + this.player.getScore() + " points.");
+            }
+        }
+    }
+
+    private resetGamePage = (message: string) => {
+        //TODO: David, reset the game and web page or reload it or something. Hopefully display message to the username input screen
     }
 
     private handleKeyDownInput = (event: KeyboardEvent): void => {

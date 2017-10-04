@@ -18,6 +18,7 @@ public abstract class Bullet implements GameEntity {
     protected final Player owner;
     protected final int damageAmount;
     protected int state = Bullet.STATE_NEW_BULLET;
+    protected int collisionRadius = 24;
 
     protected Bullet(final Player owner,
                      final float xPosition,
@@ -61,6 +62,10 @@ public abstract class Bullet implements GameEntity {
             return Bullet.STATE_NEW_BULLET;
         }
         return this.state;
+    }
+
+    public void setState(final int state) {
+        this.state = state;
     }
 
     /**
@@ -139,6 +144,14 @@ public abstract class Bullet implements GameEntity {
 
     @Override
     public void setYAcceleration(final float yAcceleration) {
+    }
+
+    public int getCollisionRadius() {
+        return this.collisionRadius;
+    }
+
+    public void setCollisionRadius(final int radius) {
+        this.collisionRadius = radius;
     }
 
     @Override

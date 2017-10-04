@@ -3,7 +3,6 @@ package com.becky;
 import org.java_websocket.WebSocket;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class Player implements GameEntity {
@@ -20,6 +19,9 @@ public class Player implements GameEntity {
     private Gun playerGun = new DefaultGun(this);
     private final List<Bullet> bulletsList = new ArrayList<>();
     private boolean firingWeapon = false;
+    private int collisionRadius = 32;
+    private int health = 10;
+    private int score = 0;
 
     public Player(final String playerUsername, final String authenticationString, final WebSocket connection) {
         this.playerUsername = playerUsername;
@@ -113,6 +115,22 @@ public class Player implements GameEntity {
         return this.angles;
     }
 
+    public int getHealth() {
+        return this.health;
+    }
+
+    public void setHealth(final int health) {
+        this.health = Math.max(health, 0);
+    }
+
+    public int getCollisionRadius() {
+        return this.collisionRadius;
+    }
+
+    public void setCollisionRadius(final int radius) {
+        this.collisionRadius = radius;
+    }
+
     public void setUsernameFinal() {
         this.usernameFinal = true;
     }
@@ -143,6 +161,14 @@ public class Player implements GameEntity {
 
     public void setFiringWeapon(final boolean firing) {
         this.firingWeapon = firing;
+    }
+
+    public int getScore() {
+        return this.score;
+    }
+
+    public void addScore(final int amt) {
+        this.score += amt;
     }
 
     @Override
