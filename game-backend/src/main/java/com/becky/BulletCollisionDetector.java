@@ -10,43 +10,20 @@ import java.util.Map;
  * Created by Clayton on 10/3/2017.
  */
 public class BulletCollisionDetector {
-    private final Player[] players;
-    private int numPlayers;
-
-    /**
-     * Creates a new collision detector for bullets
-     * @param maxPlayers The maximum number of players the detector should support
-     */
-    public BulletCollisionDetector(final int maxPlayers) {
-        players = new Player[maxPlayers];
-    }
-
-    public void setPlayers(final Collection<Player> players) {
-        if(players.size() >= this.players.length) {
-            throw new IllegalArgumentException("Provided list contains too many players. Construct a new BulletCollisionDetector instance with a higher maxPlayers value to avoid this.");
-        }
-
-        synchronized (this.players) {
-            players.toArray(this.players);
-            this.numPlayers = players.size();
-        }
-    }
-
-    public Map<Bullet, Player> getBulletCollisions() {
+    public Map<Bullet, Player> getBulletCollisions(final Player[] players) {
         final HashMap<Bullet, Player> collisions = new HashMap<>();
 
-        synchronized (this.players) {
-            for(int i = 0; i < numPlayers; i++) {
-                testPlayerBullets(i, collisions);
-            }
+        for(int i = 0, length = players.length; i < length; i++) {
+            testPlayerBullets(i, players, collisions);
         }
 
         return collisions;
     }
 
-    private void testPlayerBullets(final int playerIndex, final HashMap<Bullet, Player> collisions) {
+    private void testPlayerBullets(final int playerIndex, final Player[] players, final HashMap<Bullet, Player> collisions) {
         final Player player = players[playerIndex];
         final List<Bullet> bullets = player.getBulletsList();
+        final int numPlayers = players.length;
 
         bulletLoop:
         for(final Bullet bullet: bullets) {
@@ -56,7 +33,7 @@ public class BulletCollisionDetector {
                     continue bulletLoop;
                 }
             }
-            for(int i = playerIndex+1; i < this.numPlayers; i++) {
+            for(int i = playerIndex+1; i < numPlayers; i++) {
                 if(isBulletColliding(players[i], bullet)) {
                     collisions.put(bullet, players[i]);
                     continue bulletLoop;

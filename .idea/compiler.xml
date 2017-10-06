@@ -12,7 +12,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="game-backend" target="1.7" />
+      <module name="game-backend" target="1.8" />
       <module name="game-frontend" target="1.5" />
       <module name="gamebackend" target="1.5" />
       <module name="ProjectBecky" target="1.5" />

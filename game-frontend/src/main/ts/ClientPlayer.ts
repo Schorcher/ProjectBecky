@@ -22,8 +22,8 @@ class ClientPlayer implements Player, Updateable, GameEntity {
     private velocity: Point;
     private username: string;
     private decelerating: boolean = true;
-    private score: number;
-    private health: number;
+    private score: number = 0;
+    private health: number = 10;
 
     constructor(parent: GameEntity, x: number = 0, y: number = 0, angle: number = 0, username: string) {
         this.position = new Point(x, y);

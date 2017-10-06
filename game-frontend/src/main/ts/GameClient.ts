@@ -311,6 +311,9 @@ class GameClient implements GameEntity {
 
     private resetGamePage = (message: string) => {
         //TODO: David, reset the game and web page or reload it or something. Hopefully display message to the username input screen
+        //in the meantime here is something to refresh the page
+        alert(message);
+        window.location.reload(true);
     }
 
     private handleKeyDownInput = (event: KeyboardEvent): void => {

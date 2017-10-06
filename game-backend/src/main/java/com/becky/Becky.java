@@ -6,6 +6,7 @@ import org.json.JSONArray;
 
 import java.net.InetSocketAddress;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * The main application class of the game.
@@ -13,12 +14,11 @@ import java.util.*;
  */
 public class Becky implements Runnable {
     public static final int MAX_TPS = 20;
-    public static final int MAX_PLAYERS = 100;
 
-    private Thread thread;
     private final HashMap<String, Player> players = new HashMap<>();
+    private final HashMap<String, Player> deadPlayers = new HashMap<>();
     private final WorldBorder border = new WorldBorder(4000.0f, 4000.0f);
-    private final BulletCollisionDetector bulletCollisionDetector = new BulletCollisionDetector(MAX_PLAYERS);
+    private final BulletCollisionDetector bulletCollisionDetector = new BulletCollisionDetector();
 
     public static void main(final String[] args) {
         final InetSocketAddress socketAddress = new InetSocketAddress(3000);
@@ -30,12 +30,12 @@ public class Becky implements Runnable {
     }
 
     public void start() {
-        thread = new Thread(this);
+        final Thread thread = new Thread(this);
         thread.start();
     }
 
-    private void tick(final long elapsedTime) {
-        for(final Player player: players.values()) {
+    private void tick(final long elapsedTime, final Player[] currentPlayers) {
+        for(final Player player: currentPlayers) {
             player.tick(elapsedTime);
             border.keepEntityInBorder(player);
 
@@ -44,9 +44,9 @@ public class Becky implements Runnable {
                 border.keepEntityInBorder(bullet);
             }
 
-            final Map<Bullet, Player> playerBulletCollisions = this.bulletCollisionDetector.getBulletCollisions();
-            final Set<Bullet> keys = playerBulletCollisions.keySet();
-            for(final Bullet bullet: keys) {
+            final Map<Bullet, Player> playerBulletCollisions = this.bulletCollisionDetector.getBulletCollisions(currentPlayers);
+            final Set<Bullet> bulletKeys = playerBulletCollisions.keySet();
+            for(final Bullet bullet: bulletKeys) {
                 final Player p = playerBulletCollisions.get(bullet);
                 p.setHealth(p.getHealth() - bullet.getDamage());
 
@@ -57,6 +57,7 @@ public class Becky implements Runnable {
                     final Player attacker = bullet.getOwner();
                     attacker.addScore(p.getScore()/10);
                     this.removePlayerByUsername(p.getPlayerUsername());
+                    this.deadPlayers.put(p.getPlayerUsername(), p);
 
                     //send points update to killer
                     final PointsUpdate pointsUpdate = new PointsUpdate();
@@ -68,8 +69,8 @@ public class Becky implements Runnable {
 
                     //Send bullet updates so clients know to remove all remaining bullets from the player
                     final List<Bullet> deadBullets = p.getBulletsList();
-                    for(final Bullet bullet: deadBullets) {
-                        bullet.setState(Bullet.STATE_DEAD_BULLET);
+                    for(final Bullet bl: deadBullets) {
+                        bl.setState(Bullet.STATE_DEAD_BULLET);
                     }
                     final String jsonMessage = "BulletInfo[]:" + new JSONArray(deadBullets).toString();
                     final Collection<Player> allPlayers = this.getAllPlayers();
@@ -92,17 +93,16 @@ public class Becky implements Runnable {
         }
     }
 
-    private void transmit() {
-        transmitPlayerUpdates();
-        transmitPlayerBullets();
+    private void transmit(final Player[] currentPlayers) {
+        transmitPlayerUpdates(currentPlayers);
+        transmitPlayerBullets(currentPlayers);
     }
 
-    private void transmitPlayerBullets() {
+    private void transmitPlayerBullets(final Player[] currentPlayers) {
         final List<BulletInfo> bulletInfosList = new ArrayList<>();
 
         //Get all bullets for all players, and convert them into bullet info objects
-        final Collection<Player> allPlayers = players.values();
-        for(final Player player: allPlayers) {
+        for(final Player player: currentPlayers) {
             final String username = player.getPlayerUsername();
             final List<Bullet> bullets = player.getBulletsList();
             for(final Bullet bullet: bullets) {
@@ -147,7 +147,7 @@ public class Becky implements Runnable {
         final String serializedData = "BulletInfo[]:" + jsonBulletInfos.toString();
 
         //transmit the serialized data to all players
-        for(final Player player: allPlayers) {
+        for(final Player player: currentPlayers) {
             final WebSocket connection = player.getConnection();
             if(connection.isOpen()) {
                 connection.send(serializedData);
@@ -155,19 +155,19 @@ public class Becky implements Runnable {
         }
     }
 
-    private void transmitPlayerUpdates() {
-        final int length = players.values().size();
-        Player[] values = new Player[length];
-        values = players.values().toArray(values);
+    private void transmitPlayerUpdates(final Player[] currentPlayers) {
+        final int length = currentPlayers.length;
         final ServerPlayerUpdate[] updates = new ServerPlayerUpdate[length];
         for(int i = 0; i < length; i++) {
-            updates[i] = new ServerPlayerUpdate(values[i]);
+            updates[i] = new ServerPlayerUpdate(currentPlayers[i]);
         }
 
         final JSONArray serializedData = new JSONArray(Arrays.asList(updates));
         final String data = ServerPlayerUpdate.class.getSimpleName() + "[]:" + serializedData.toString();
-        for(final Player player: values) {
-            player.getConnection().send(data);
+        for(final Player player: currentPlayers) {
+            if(player.getConnection().isOpen()) {
+                player.getConnection().send(data);
+            }
         }
     }
 
@@ -181,8 +181,18 @@ public class Becky implements Runnable {
             elapsedTime = frameEnd - frameStart;
             frameStart = System.currentTimeMillis();
 
-            tick(elapsedTime); //update
-            transmit(); //send data to clients
+            //for thread safety, move the current player list into an array
+            final Player[] currentPlayers = new Player[players.values().size()];
+            synchronized(players) {
+                int index = 0;
+                for(final Player player: players.values()) {
+                    currentPlayers[index] = player;
+                    index++;
+                }
+            }
+
+            tick(elapsedTime, currentPlayers); //update
+            transmit(currentPlayers); //send data to clients
 
             //see if we need to sleep
             //sleep if necessary
@@ -198,8 +208,9 @@ public class Becky implements Runnable {
     }
 
     public void addPlayer(final Player player) {
-        players.put(player.getPlayerUsername().intern(), player);
-        this.bulletCollisionDetector.setPlayers(players.values());
+        synchronized (this.players) {
+            players.put(player.getPlayerUsername().intern(), player);
+        }
     }
 
     public Player getPlayerByUsername(final String userName) {
@@ -207,20 +218,37 @@ public class Becky implements Runnable {
     }
 
     public Player getPlayerByConnection(final WebSocket connection) {
-        for (final Player player: players.values()) {
-            if(player.getConnection().equals(connection)) {
-                return player;
+        synchronized (this.players) {
+            for (final Player player : players.values()) {
+                if (player.getConnection().equals(connection)) {
+                    return player;
+                }
+            }
+        }
+        synchronized (this.deadPlayers) {
+            for(final Player player: deadPlayers.values()) {
+                if(player.getConnection().equals(connection)) {
+                    return player;
+                }
             }
         }
         return null;
     }
 
     public Collection<Player> getAllPlayers() {
-        return this.players.values();
+        synchronized (this.players) {
+            return new ArrayList<>(this.players.values());
+        }
     }
 
     public void removePlayerByUsername(final String userName){
-        players.remove(userName.intern());
-        this.bulletCollisionDetector.setPlayers(players.values());
+        synchronized (this.players) {
+            if(players.remove(userName.intern()) != null) {
+                return;
+            }
+        }
+        synchronized (this.deadPlayers) {
+            deadPlayers.remove(userName.intern());
+        }
     }
 }
