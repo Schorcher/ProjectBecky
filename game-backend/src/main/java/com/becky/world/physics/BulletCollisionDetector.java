@@ -1,6 +1,8 @@
-package com.becky;
+package com.becky.world.physics;
 
-import java.util.Collection;
+import com.becky.world.entity.Bullet;
+import com.becky.world.entity.Player;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

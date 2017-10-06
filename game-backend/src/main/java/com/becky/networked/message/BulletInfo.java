@@ -1,4 +1,4 @@
-package com.becky.networked;
+package com.becky.networked.message;
 
 /**
  * The class of data to be sent to clients

@@ -1,5 +1,9 @@
 package com.becky;
 
+import com.becky.world.entity.Bullet;
+import com.becky.world.entity.DefaultBullet;
+import com.becky.world.entity.Player;
+
 public class DefaultGun implements Gun {
     private static final byte RATE_OF_FIRE = 10; //per second
     private static final float VELOCITY = 500.0f;

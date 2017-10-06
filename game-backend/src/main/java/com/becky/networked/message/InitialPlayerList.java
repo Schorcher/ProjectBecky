@@ -1,4 +1,4 @@
-package com.becky.networked;
+package com.becky.networked.message;
 
 public class InitialPlayerList {
     private ServerPlayerUpdate[] players;

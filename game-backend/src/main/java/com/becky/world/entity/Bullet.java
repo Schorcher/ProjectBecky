@@ -1,4 +1,4 @@
-package com.becky;
+package com.becky.world.entity;
 
 import java.awt.geom.Point2D;
 

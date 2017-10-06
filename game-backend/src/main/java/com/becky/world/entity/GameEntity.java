@@ -1,4 +1,8 @@
-package com.becky;
+package com.becky.world.entity;
+
+import com.becky.world.GameWorld;
+
+import java.util.Collection;
 
 public interface GameEntity {
     float getXPosition();
@@ -20,4 +24,10 @@ public interface GameEntity {
     float getAngles();
 
     void tick(final long elapsedTime);
+
+    GameWorld getGameWorld();
+
+    GameEntity getParent();
+
+    Collection<GameEntity> getChildren();
 }

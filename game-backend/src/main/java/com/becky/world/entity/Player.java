@@ -1,32 +1,49 @@
-package com.becky;
+package com.becky.world.entity;
 
+import com.becky.DefaultGun;
+import com.becky.Gun;
+import com.becky.world.GameWorld;
 import org.java_websocket.WebSocket;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class Player implements GameEntity {
     public static final float MAX_VELOCITY = 600.0f;
     public static final float ACCELERATION = 1800.0f;
+
+    //position and other vectors
     private final Point2D.Float position = new Point2D.Float(0.0f, 0.0f);
     private final Point2D.Float velocity = new Point2D.Float(0.0f, 0.0f);
     private final Point2D.Float acceleration = new Point2D.Float(0.0f, 0.0f);
+    private float angles;
+
+    //player metadata
     private String playerUsername;
     private final WebSocket connection;
     private final String authenticationString;
     private boolean usernameFinal = false;
-    private float angles;
-    private Gun playerGun = new DefaultGun(this);
-    private final List<Bullet> bulletsList = new ArrayList<>();
-    private boolean firingWeapon = false;
+
+    //player descriptors
     private int collisionRadius = 32;
     private int health = 10;
     private int score = 0;
 
-    public Player(final String playerUsername, final String authenticationString, final WebSocket connection) {
+    //player state information
+    private Gun playerGun = new DefaultGun(this);
+    private final List<Bullet> bulletsList = new ArrayList<>();
+    private boolean firingWeapon = false;
+
+    //game entity fields
+    private final GameWorld containerWorld;
+
+    public Player(final GameWorld gameWorld, final String playerUsername, final String authenticationString, final WebSocket connection) {
         this.playerUsername = playerUsername;
         this.connection = connection;
         this.authenticationString = authenticationString;
+        this.containerWorld = gameWorld;
     }
 
     public String getAuthenticationString() {
@@ -169,6 +186,21 @@ public class Player implements GameEntity {
 
     public void addScore(final int amt) {
         this.score += amt;
+    }
+
+    @Override
+    public Collection<GameEntity> getChildren() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public GameEntity getParent() {
+        return null;
+    }
+
+    @Override
+    public GameWorld getGameWorld() {
+        return this.containerWorld;
     }
 
     @Override

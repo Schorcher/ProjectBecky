@@ -1,4 +1,4 @@
-package com.becky.networked;
+package com.becky.networked.message;
 
 /**
  * Represents a networked message

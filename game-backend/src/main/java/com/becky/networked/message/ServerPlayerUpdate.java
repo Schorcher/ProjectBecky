@@ -1,6 +1,6 @@
-package com.becky.networked;
+package com.becky.networked.message;
 
-import com.becky.Player;
+import com.becky.world.entity.Player;
 import org.json.JSONObject;
 
 public class ServerPlayerUpdate

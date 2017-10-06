@@ -1,5 +1,7 @@
 package com.becky;
 
+import com.becky.world.entity.Player;
+
 /**
  * A gun fires bullets by creating them. Is simple.
  */

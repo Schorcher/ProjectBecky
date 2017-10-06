@@ -1,13 +1,16 @@
 package com.becky;
 
-import com.becky.networked.BulletInfo;
-import com.becky.networked.ClientInputStateUpdate;
-import com.becky.networked.InitialPlayerList;
-import com.becky.networked.InitialServerJoinState;
-import com.becky.networked.PlayerListChange;
-import com.becky.networked.ServerPlayerUpdate;
-import com.becky.networked.ServerUsernameRequestStatus;
-import com.becky.networked.UsernameChangeRequest;
+import com.becky.networked.message.BulletInfo;
+import com.becky.networked.message.ClientInputStateUpdate;
+import com.becky.networked.message.InitialPlayerList;
+import com.becky.networked.message.InitialServerJoinState;
+import com.becky.networked.message.PlayerListChange;
+import com.becky.networked.message.ServerPlayerUpdate;
+import com.becky.networked.message.ServerUsernameRequestStatus;
+import com.becky.networked.message.UsernameChangeRequest;
+import com.becky.world.GameWorld;
+import com.becky.world.entity.Bullet;
+import com.becky.world.entity.Player;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -20,9 +23,9 @@ import java.util.Collection;
 import java.util.List;
 
 public class SimpleServer extends WebSocketServer {
-    private final Becky gameInstance;
+    private final GameWorld gameInstance;
 
-    public SimpleServer(final InetSocketAddress addr, final Becky gameInstance){
+    public SimpleServer(final InetSocketAddress addr, final GameWorld gameInstance){
         super(addr);
         this.gameInstance = gameInstance;
     }
@@ -71,7 +74,7 @@ public class SimpleServer extends WebSocketServer {
             username = StringUtils.generateRandomUsername();
         }
         final String auth = StringUtils.generateUniqueAuthenticationString();
-        final Player player = new Player(username, auth, webSocket);
+        final Player player = new Player(gameInstance, username, auth, webSocket);
         gameInstance.addPlayer(player);
 
         //Setup the initial join state of the player

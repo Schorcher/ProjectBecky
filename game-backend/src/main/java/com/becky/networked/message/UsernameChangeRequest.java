@@ -1,4 +1,4 @@
-package com.becky.networked;
+package com.becky.networked.message;
 
 import org.json.JSONObject;
 

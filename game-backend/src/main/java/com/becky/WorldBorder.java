@@ -1,5 +1,7 @@
 package com.becky;
 
+import com.becky.world.entity.GameEntity;
+
 public class WorldBorder {
     private final float maxX;
     private final float maxY;
