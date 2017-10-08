@@ -1,10 +1,8 @@
-package com.becky.networked.message;
+package com.becky.networking.message;
 
-import com.becky.world.entity.Player;
 import org.json.JSONObject;
 
-public class ServerPlayerUpdate
-{
+public class ServerPlayerUpdate implements NetworkedMessage {
     private float posX;
     private float posY;
     private String playerName;
@@ -42,17 +40,11 @@ public class ServerPlayerUpdate
     //    return new Point(this.accelX, this.accelY);
     //}
 
-    public ServerPlayerUpdate(final Player player) {
-        this.posX = player.getXPosition();
-        this.posY = player.getYPosition();
-        this.playerName = player.getPlayerUsername();
-    }
-
     public float getPosX() {
         return posX;
     }
 
-    public void setPosX(final int posX) {
+    public void setPosX(final float posX) {
         this.posX = posX;
     }
 
@@ -60,7 +52,7 @@ public class ServerPlayerUpdate
         return posY;
     }
 
-    public void setPosY(final int posY) {
+    public void setPosY(final float posY) {
         this.posY = posY;
     }
 
@@ -72,6 +64,7 @@ public class ServerPlayerUpdate
         this.playerName = playerName;
     }
 
+    @Override
     public String jsonSerialize() {
         return ServerPlayerUpdate.class.getSimpleName() + ":" + new JSONObject(this).toString();
     }

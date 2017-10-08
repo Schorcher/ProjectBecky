@@ -1,8 +1,8 @@
-package com.becky.networked.message;
+package com.becky.networking.message;
 
 import org.json.JSONObject;
 
-public class UsernameChangeRequest {
+public class UsernameChangeRequest implements NetworkedMessage {
     private String oldUsername;
     private String newUsername;
     private String authenticationString;
@@ -48,6 +48,7 @@ public class UsernameChangeRequest {
         this.authenticationString = authenticationString;
     }
 
+    @Override
     public String jsonSerialize() {
         return UsernameChangeRequest.class.getSimpleName() + ":" + new JSONObject(this).toString();
     }

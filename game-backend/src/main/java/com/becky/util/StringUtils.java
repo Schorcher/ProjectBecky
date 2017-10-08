@@ -1,4 +1,4 @@
-package com.becky;
+package com.becky.util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +14,7 @@ public class StringUtils {
                 builder.append('-');
             }
             else {
-                final int rnd = (int)Math.round(Math.random() * 62);
+                final int rnd = (int)(Math.random() * 62);
                 builder.append(CHARACTERS.charAt(rnd));
             }
         }

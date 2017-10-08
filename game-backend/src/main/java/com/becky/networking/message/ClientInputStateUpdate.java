@@ -1,11 +1,11 @@
-package com.becky.networked.message;
+package com.becky.networking.message;
 
 import org.json.JSONObject;
 
 /**
  * Represents an input state change message from the client to the server.
  */
-public class ClientInputStateUpdate {
+public class ClientInputStateUpdate implements NetworkedMessage {
     private final String username;
     private final String authString;
     private final boolean movingUp;
@@ -65,5 +65,10 @@ public class ClientInputStateUpdate {
 
     public String getAuthString() {
         return this.authString;
+    }
+
+    @Override
+    public String jsonSerialize() {
+        return ClientInputStateUpdate.class.getSimpleName() + ":" + new JSONObject(this).toString();
     }
 }

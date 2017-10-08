@@ -5,13 +5,10 @@ import java.awt.geom.Point2D;
 /**
  * Defines a type of bullet shot by a player
  */
-public abstract class Bullet implements GameEntity {
+public abstract class Bullet extends GameEntity {
     public static final int STATE_NEW_BULLET = 0;
     public static final int STATE_UPDATED_BULLET = 1;
     public static final int STATE_DEAD_BULLET = 2;
-
-    private static long BULLET_ID_COUNT = 0;
-    private final long bulletId;
 
     protected final Point2D.Float position = new Point2D.Float(0.0f, 0.0f);
     protected final Point2D.Float velocity = new Point2D.Float(0.0f, 0.0f);
@@ -26,8 +23,6 @@ public abstract class Bullet implements GameEntity {
                      final float xVelocity,
                      final float yVelocity,
                      final int damageAmount) {
-        this.bulletId = BULLET_ID_COUNT;
-        BULLET_ID_COUNT++;
         this.owner = owner;
         position.x = xPosition;
         position.y = yPosition;
@@ -73,14 +68,6 @@ public abstract class Bullet implements GameEntity {
      * @return
      */
     public abstract float getRemainingHealth();
-
-    /**
-     * Gets the unique id of this bullet.
-     * @return
-     */
-    public long getBulletId() {
-        return this.bulletId;
-    }
 
     @Override
     public float getXPosition() {
@@ -139,12 +126,10 @@ public abstract class Bullet implements GameEntity {
     }
 
     @Override
-    public void setXAcceleration(final float xAcceleration) {
-    }
+    public void setXAcceleration(final float xAcceleration) { }
 
     @Override
-    public void setYAcceleration(final float yAcceleration) {
-    }
+    public void setYAcceleration(final float yAcceleration) { }
 
     public int getCollisionRadius() {
         return this.collisionRadius;

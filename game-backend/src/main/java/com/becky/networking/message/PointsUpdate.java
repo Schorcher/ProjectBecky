@@ -1,4 +1,4 @@
-package com.becky.networked.message;
+package com.becky.networking.message;
 
 import org.json.JSONObject;
 
@@ -6,7 +6,7 @@ import org.json.JSONObject;
  * A message indicating a points update.
  * Created by Clayton on 10/4/2017.
  */
-public class PointsUpdate {
+public class PointsUpdate implements NetworkedMessage {
     private String username;
     private int numPoints;
 

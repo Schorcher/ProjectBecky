@@ -1,7 +1,7 @@
 package com.becky.world.entity;
 
-import com.becky.DefaultGun;
-import com.becky.Gun;
+import com.becky.world.weapon.DefaultGun;
+import com.becky.world.weapon.Gun;
 import com.becky.world.GameWorld;
 import org.java_websocket.WebSocket;
 import java.awt.geom.Point2D;
@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public class Player implements GameEntity {
+public class Player extends GameEntity {
     public static final float MAX_VELOCITY = 600.0f;
     public static final float ACCELERATION = 1800.0f;
 

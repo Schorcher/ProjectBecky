@@ -1,8 +1,8 @@
-package com.becky.networked.message;
+package com.becky.networking.message;
 
 import org.json.JSONObject;
 
-public class PlayerListChange {
+public class PlayerListChange implements NetworkedMessage{
     private String username;
     private boolean joined;
 
@@ -36,5 +36,10 @@ public class PlayerListChange {
 
     public void setJoined(final boolean joined) {
         this.joined = joined;
+    }
+
+    @Override
+    public String jsonSerialize() {
+        return PlayerListChange.class.getSimpleName() + ":" + new JSONObject(this).toString();
     }
 }

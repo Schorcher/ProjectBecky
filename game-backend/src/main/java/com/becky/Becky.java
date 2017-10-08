@@ -1,5 +1,6 @@
 package com.becky;
 
+import com.becky.networking.SimpleServer;
 import com.becky.world.GameWorld;
 
 import java.net.InetSocketAddress;

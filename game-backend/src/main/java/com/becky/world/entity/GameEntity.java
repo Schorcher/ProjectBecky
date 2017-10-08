@@ -4,30 +4,42 @@ import com.becky.world.GameWorld;
 
 import java.util.Collection;
 
-public interface GameEntity {
-    float getXPosition();
-    float getYPosition();
-    void setXPosition(final float xPosition);
-    void setYPosition(final float yPosition);
+public abstract class GameEntity {
+    private static long entityCount = 1;
+    private final long entityId;
 
-    float getXVelocity();
-    float getYVelocity();
-    void setXVelocity(final float xVelocity);
-    void setYVelocity(final float yVelocity);
+    public GameEntity() {
+        entityId = entityCount;
+        entityCount++;
+    }
 
-    float getXAcceleration();
-    float getYAcceleration();
-    void setXAcceleration(final float xAcceleration);
-    void setYAcceleration(final float yAcceleration);
+    public long getEntityId() {
+        return this.entityId;
+    }
 
-    void setAngles(final float angles);
-    float getAngles();
+    public abstract float getXPosition();
+    public abstract float getYPosition();
+    public abstract void setXPosition(final float xPosition);
+    public abstract void setYPosition(final float yPosition);
 
-    void tick(final long elapsedTime);
+    public abstract float getXVelocity();
+    public abstract float getYVelocity();
+    public abstract void setXVelocity(final float xVelocity);
+    public abstract void setYVelocity(final float yVelocity);
 
-    GameWorld getGameWorld();
+    public abstract float getXAcceleration();
+    public abstract float getYAcceleration();
+    public abstract void setXAcceleration(final float xAcceleration);
+    public abstract void setYAcceleration(final float yAcceleration);
 
-    GameEntity getParent();
+    public abstract void setAngles(final float angles);
+    public abstract float getAngles();
 
-    Collection<GameEntity> getChildren();
+    public abstract void tick(final long elapsedTime);
+
+    public abstract GameWorld getGameWorld();
+
+    public abstract GameEntity getParent();
+
+    public abstract Collection<GameEntity> getChildren();
 }

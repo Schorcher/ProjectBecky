@@ -1,8 +1,8 @@
-package com.becky.networked.message;
+package com.becky.networking.message;
 
 import org.json.JSONObject;
 
-public class InitialServerJoinState {
+public class InitialServerJoinState implements NetworkedMessage {
     private String initialUsername;
     private String authenticationString;
     private float initialLocationX;
@@ -58,6 +58,7 @@ public class InitialServerJoinState {
         this.initialLocationY = initialLocationY;
     }
 
+    @Override
     public String jsonSerialize() {
         return InitialServerJoinState.class.getSimpleName() + ":" + new JSONObject(this).toString();
     }

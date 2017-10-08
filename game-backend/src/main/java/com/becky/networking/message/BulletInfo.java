@@ -1,9 +1,14 @@
-package com.becky.networked.message;
+package com.becky.networking.message;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.List;
 
 /**
  * The class of data to be sent to clients
  */
-public class BulletInfo {
+public class BulletInfo implements NetworkedMessage {
     private final String owner;
     private final int state;
     private final long bulletId;
@@ -50,5 +55,14 @@ public class BulletInfo {
 
     public long getBulletId() {
         return this.bulletId;
+    }
+
+    @Override
+    public String jsonSerialize() {
+        return BulletInfo.class.getSimpleName() + ":" + new JSONObject(this).toString();
+    }
+
+    public static String jsonSerialize(final List<BulletInfo> infos) {
+        return BulletInfo.class.getSimpleName() + "[]:" + new JSONArray(infos).toString();
     }
 }

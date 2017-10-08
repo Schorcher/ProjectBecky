@@ -1,8 +1,8 @@
-package com.becky.networked.message;
+package com.becky.networking.message;
 
 import org.json.JSONObject;
 
-public class ServerUsernameRequestStatus {
+public class ServerUsernameRequestStatus implements NetworkedMessage {
     private String status;
     private String message;
 
@@ -38,6 +38,7 @@ public class ServerUsernameRequestStatus {
         return this.message;
     }
 
+    @Override
     public String jsonSerialize() {
         return ServerUsernameRequestStatus.class.getSimpleName() + ":" + new JSONObject(this).toString();
     }

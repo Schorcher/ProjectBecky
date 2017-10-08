@@ -3,11 +3,11 @@ package com.becky.world;
 import com.becky.world.entity.Bullet;
 import com.becky.world.physics.BulletCollisionDetector;
 import com.becky.world.entity.Player;
-import com.becky.WorldBorder;
-import com.becky.networked.message.BulletInfo;
-import com.becky.networked.message.PlayerHealthMessage;
-import com.becky.networked.message.PointsUpdate;
-import com.becky.networked.message.ServerPlayerUpdate;
+import com.becky.world.physics.WorldBorderCollisionDetector;
+import com.becky.networking.message.BulletInfo;
+import com.becky.networking.message.PlayerHealthMessage;
+import com.becky.networking.message.PointsUpdate;
+import com.becky.networking.message.ServerPlayerUpdate;
 import org.java_websocket.WebSocket;
 import org.json.JSONArray;
 
@@ -24,7 +24,7 @@ public class GameWorld implements Runnable {
 
     private final HashMap<String, Player> players = new HashMap<>();
     private final HashMap<String, Player> deadPlayers = new HashMap<>();
-    private final WorldBorder border = new WorldBorder(4000.0f, 4000.0f);
+    private final WorldBorderCollisionDetector border = new WorldBorderCollisionDetector(4000.0f, 4000.0f);
     private final BulletCollisionDetector bulletCollisionDetector = new BulletCollisionDetector();
 
     public void start() {
@@ -110,14 +110,14 @@ public class GameWorld implements Runnable {
                     //Since this is a new bullet, the client will need to know everything. That means the
                     //client needs to know this is a new bullet, needs to know the owner of the bullet,
                     //the id, position, and velocity of the bullet. All need to be known by the client.
-                    info = new BulletInfo(username, Bullet.STATE_NEW_BULLET, bullet.getBulletId(),
+                    info = new BulletInfo(username, Bullet.STATE_NEW_BULLET, bullet.getEntityId(),
                             bullet.getXVelocity(), bullet.getYVelocity(), bullet.getXPosition(), bullet.getYPosition());
                 }
                 else if(bulletState == Bullet.STATE_DEAD_BULLET) {
                     //We use null for position and velocity because all the client needs to know
                     //is that the bullet is dead and should be removed from the game.
                     //All the client needs to know is the bullet id and that the bullet state is dead
-                    info = new BulletInfo(null, Bullet.STATE_DEAD_BULLET, bullet.getBulletId(),
+                    info = new BulletInfo(null, Bullet.STATE_DEAD_BULLET, bullet.getEntityId(),
                             null, null, null, null);
 
                     //Also since the bullet is dead, and the BulletInfo is obtained, we can go ahead and remove
@@ -129,7 +129,7 @@ public class GameWorld implements Runnable {
                     //of the bullet in a basic bullet update. The client already also knows the owner of the
                     //bullet, so it doesn't need that either.
                     //All the client needs is the bullet state (update), the bullet id, and the bullet position.
-                    info = new BulletInfo(null, Bullet.STATE_UPDATED_BULLET, bullet.getBulletId(),
+                    info = new BulletInfo(null, Bullet.STATE_UPDATED_BULLET, bullet.getEntityId(),
                             null, null, bullet.getXPosition(), bullet.getYPosition());
                 }
                 bulletInfosList.add(info);
@@ -141,8 +141,7 @@ public class GameWorld implements Runnable {
         }
 
         //now that all bullet infos are obtained, it is time to json serialize the array
-        final JSONArray jsonBulletInfos = new JSONArray(bulletInfosList);
-        final String serializedData = "BulletInfo[]:" + jsonBulletInfos.toString();
+        final String serializedData = BulletInfo.jsonSerialize(bulletInfosList);
 
         //transmit the serialized data to all players
         for(final Player player: currentPlayers) {
@@ -156,8 +155,14 @@ public class GameWorld implements Runnable {
     private void transmitPlayerUpdates(final Player[] currentPlayers) {
         final int length = currentPlayers.length;
         final ServerPlayerUpdate[] updates = new ServerPlayerUpdate[length];
-        for(int i = 0; i < length; i++) {
-            updates[i] = new ServerPlayerUpdate(currentPlayers[i]);
+        int i = 0;
+        for(final Player player: currentPlayers) {
+            final ServerPlayerUpdate update = new ServerPlayerUpdate();
+            update.setPlayerName(player.getPlayerUsername());
+            update.setPosX(player.getXPosition());
+            update.setPosY(player.getYPosition());
+            updates[i] = update;
+            i++;
         }
 
         final JSONArray serializedData = new JSONArray(Arrays.asList(updates));

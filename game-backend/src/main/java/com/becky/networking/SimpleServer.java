@@ -1,13 +1,14 @@
-package com.becky;
+package com.becky.networking;
 
-import com.becky.networked.message.BulletInfo;
-import com.becky.networked.message.ClientInputStateUpdate;
-import com.becky.networked.message.InitialPlayerList;
-import com.becky.networked.message.InitialServerJoinState;
-import com.becky.networked.message.PlayerListChange;
-import com.becky.networked.message.ServerPlayerUpdate;
-import com.becky.networked.message.ServerUsernameRequestStatus;
-import com.becky.networked.message.UsernameChangeRequest;
+import com.becky.util.StringUtils;
+import com.becky.networking.message.BulletInfo;
+import com.becky.networking.message.ClientInputStateUpdate;
+import com.becky.networking.message.InitialPlayerList;
+import com.becky.networking.message.InitialServerJoinState;
+import com.becky.networking.message.PlayerListChange;
+import com.becky.networking.message.ServerPlayerUpdate;
+import com.becky.networking.message.ServerUsernameRequestStatus;
+import com.becky.networking.message.UsernameChangeRequest;
 import com.becky.world.GameWorld;
 import com.becky.world.entity.Bullet;
 import com.becky.world.entity.Player;
@@ -15,7 +16,6 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -142,6 +142,9 @@ public class SimpleServer extends WebSocketServer {
     private void handlePlayerInputStateMessage(final String message) {
         final ClientInputStateUpdate update = new ClientInputStateUpdate(message);
         final Player p = gameInstance.getPlayerByUsername(update.getUsername());
+        if(p == null) {
+            return;
+        }
         if(!p.getAuthenticationString().equals(update.getAuthString())) {
             throw new RuntimeException("Bad authentication string.");
         }
@@ -180,7 +183,7 @@ public class SimpleServer extends WebSocketServer {
         final PlayerListChange listChange = new PlayerListChange();
         listChange.setUsername(joinedUsername);
         listChange.setJoined(joined);
-        final String jsonMessage = PlayerListChange.class.getSimpleName() + ":" + new JSONObject(listChange).toString();
+        final String jsonMessage = listChange.jsonSerialize();
 
         final Collection<Player> allPlayers = gameInstance.getAllPlayers();
         for(final Player player: allPlayers) {
@@ -198,17 +201,17 @@ public class SimpleServer extends WebSocketServer {
                 continue;
             }
 
-            final ServerPlayerUpdate update = new ServerPlayerUpdate(player);
+            final ServerPlayerUpdate update = new ServerPlayerUpdate();
+            update.setPlayerName(dest.getPlayerUsername());
+            update.setPosX(dest.getXPosition());
+            update.setPosY(dest.getYPosition());
             updates.add(update);
         }
 
         final InitialPlayerList initialPlayerList = new InitialPlayerList();
-        final ServerPlayerUpdate[] serverPlayerUpdates = new ServerPlayerUpdate[updates.size()];
-        initialPlayerList.setPlayers(serverPlayerUpdates);
-        updates.toArray(serverPlayerUpdates);
-        final JSONObject obj = new JSONObject(initialPlayerList);
+        initialPlayerList.setPlayers(updates);
         if(dest.getConnection().isOpen()) {
-            dest.getConnection().send(InitialPlayerList.class.getSimpleName() + ":" + obj.toString());
+            dest.getConnection().send(initialPlayerList.jsonSerialize());
         }
     }
 
@@ -219,7 +222,7 @@ public class SimpleServer extends WebSocketServer {
             final List<Bullet> bullets = player.getBulletsList();
             for(final Bullet bullet: bullets) {
                 final BulletInfo info = new BulletInfo(player.getPlayerUsername(), Bullet.STATE_NEW_BULLET,
-                    bullet.getBulletId(), bullet.getXVelocity(), bullet.getYVelocity(), bullet.getXPosition(), bullet.getYPosition());
+                    bullet.getEntityId(), bullet.getXVelocity(), bullet.getYVelocity(), bullet.getXPosition(), bullet.getYPosition());
                 bulletInfosList.add(info);
             }
         }

@@ -1,4 +1,4 @@
-package com.becky;
+package com.becky.world.weapon;
 
 import com.becky.world.entity.Bullet;
 import com.becky.world.entity.DefaultBullet;

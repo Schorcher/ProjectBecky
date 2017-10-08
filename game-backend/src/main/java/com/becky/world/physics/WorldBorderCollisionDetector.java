@@ -1,8 +1,8 @@
-package com.becky;
+package com.becky.world.physics;
 
 import com.becky.world.entity.GameEntity;
 
-public class WorldBorder {
+public class WorldBorderCollisionDetector {
     private final float maxX;
     private final float maxY;
     private float currentX;
@@ -10,7 +10,7 @@ public class WorldBorder {
     private float expansionAmount;
     private long expansionTime;
 
-    public WorldBorder(final float maxX, final float maxY) {
+    public WorldBorderCollisionDetector(final float maxX, final float maxY) {
         this.maxX = maxX;
         this.maxY = maxY;
         this.currentX = maxX;
