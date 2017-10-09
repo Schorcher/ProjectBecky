@@ -18,6 +18,7 @@ import org.java_websocket.server.WebSocketServer;
 import org.json.JSONArray;
 
 import java.net.InetSocketAddress;
+import java.nio.channels.NotYetConnectedException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -99,6 +100,11 @@ public class SimpleServer extends WebSocketServer {
             //player has requested a username change
             else if (message.startsWith(UsernameChangeRequest.class.getSimpleName())) {
                 handlePlayerUsernameChangeRequest(message, webSocket);
+            }
+            else if(message.startsWith("PING:")) {
+                if(webSocket.isOpen()){
+                    webSocket.send(message);
+                }
             }
         }
         catch(final RuntimeException ex) {

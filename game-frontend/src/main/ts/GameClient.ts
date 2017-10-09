@@ -14,6 +14,9 @@
  * This class ultimately contains everything.
  */
 class GameClient implements GameEntity {
+    static FRAMES_PER_SECOND: number = 60;
+    static TIME_PER_FRAME: number = 1000.0 / GameClient.FRAMES_PER_SECOND;
+
     //keep these the same as the server. Might have server send message to client with these values in future
     private worldWidth: number = 4000;
     private worldHeight: number = 4000;
@@ -29,6 +32,7 @@ class GameClient implements GameEntity {
     private authenticationString: string;
     private background: GameBackground;
     private numFrames: number = 0;
+    private lagCompensator: LagCompensator = new LagCompensator(8);
 
     /**
      * Creates a new GameClient instance.
@@ -110,11 +114,14 @@ class GameClient implements GameEntity {
         if(this.numFrames % 4 === 0) {
             this.sendInputState();
         }
+        if(this.numFrames % GameClient.FRAMES_PER_SECOND == 0) {//every 60 frames/once per second
+            this.connection.send("PING:" + Date.now());
+        }
         this.numFrames++;
 
         //30 fps is 33 milliseconds per frame
         //if frame took less than 34 millis to complete then waitout the remaining time
-        let waitTime: number = 16.6 - elapsedTime;
+        let waitTime: number = GameClient.TIME_PER_FRAME - elapsedTime;
 
         if(waitTime < 0) {
             waitTime = 0;
@@ -290,6 +297,10 @@ class GameClient implements GameEntity {
                 }
             }
         }
+        else if(message.substring(0, 5) === "PING:") {
+            let time: number = parseInt(message.substring(5));
+            this.lagCompensator.latency = Math.floor((Date.now() - time) / 2);
+        }
         else if((object = PointsUpdate.getValidObjectFromJson(message)) !== null) {
             let points: PointsUpdate = object as PointsUpdate;
             if(this.player.getUsername() === points.username) {
@@ -298,11 +309,11 @@ class GameClient implements GameEntity {
         }
         else if((object = PlayerHealthMessage.getValidObjectFromJson(message)) !== null) {
             let health: PlayerHealthMessage = object as PlayerHealthMessage;
-            if(this.player.getUsername() === health.username) {
+            if (this.player.getUsername() === health.username) {
                 this.player.setHealth(health.health);
             }
 
-            if(health.health < 1) {
+            if (health.health < 1) {
                 this.connection.close(1000, "Player died.");
                 this.resetGamePage("Killed by " + health.affectedBy + ". You had " + this.player.getScore() + " points.");
             }
