@@ -6,6 +6,7 @@ import com.becky.networking.message.*;
 import com.becky.world.entity.Bullet;
 import com.becky.world.entity.GameEntity;
 import com.becky.world.entity.Player;
+import com.becky.world.entity.npc.NpcSpawner;
 import com.becky.world.physics.BulletCollisionDetector;
 import com.becky.world.physics.PhysicsFilter;
 import com.becky.world.physics.WorldBorderCollisionDetector;
@@ -25,6 +26,8 @@ public class NewGameWorld implements Runnable {
     private final List<GameEntity> gameEntities = new ArrayList<>();
     private final List<PhysicsFilter> physicsFilters = new ArrayList<>();
     private final PlayerMessageTransmitter messageTransmitter = new PlayerMessageTransmitter();
+    private final List<WorldEventListener> worldEventListeners = new ArrayList<>();
+    private final NpcSpawner spawner = new NpcSpawner(this);
 
     public NewGameWorld() {
         physicsFilters.add(new BulletCollisionDetector(this));
@@ -55,6 +58,8 @@ public class NewGameWorld implements Runnable {
             applyPhysics(entities);
             //transmit entity details
             transmit(entities);
+            //spawn npcs as necessary
+            spawner.executeSpawnRules();
 
             //see if we need to sleep
             //sleep if necessary
@@ -165,11 +170,23 @@ public class NewGameWorld implements Runnable {
         synchronized (this.gameEntities) {
             gameEntities.add(entity);
         }
+
+        synchronized (this.worldEventListeners) {
+            for(final WorldEventListener listener: worldEventListeners) {
+                listener.onGameEntityAdded(this, entity);
+            }
+        }
     }
 
     public void removeGameEntity(final GameEntity entity) {
         synchronized (this.gameEntities) {
             gameEntities.remove(entity);
+        }
+
+        synchronized (this.worldEventListeners) {
+            for(final WorldEventListener listener: worldEventListeners) {
+                listener.onGameEntityRemoved(this, entity);
+            }
         }
     }
 
@@ -228,5 +245,17 @@ public class NewGameWorld implements Runnable {
 
     public PlayerMessageTransmitter getMessageTransmitter() {
         return this.messageTransmitter;
+    }
+
+    public void addWorldEventListener(final WorldEventListener listener) {
+        synchronized (this.worldEventListeners) {
+            worldEventListeners.add(listener);
+        }
+    }
+
+    public void removeWorldEventListener(final WorldEventListener listener) {
+        synchronized (this.worldEventListeners) {
+            worldEventListeners.remove(listener);
+        }
     }
 }
