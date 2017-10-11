@@ -1,8 +1,12 @@
 package com.becky.world.physics;
 
+import com.becky.networking.message.PlayerHealthMessage;
+import com.becky.world.NewGameWorld;
 import com.becky.world.entity.Bullet;
+import com.becky.world.entity.GameEntity;
 import com.becky.world.entity.Player;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,35 +15,43 @@ import java.util.Map;
  * Determines if bullets are colliding with players
  * Created by Clayton on 10/3/2017.
  */
-public class BulletCollisionDetector {
-    public Map<Bullet, Player> getBulletCollisions(final Player[] players) {
-        final HashMap<Bullet, Player> collisions = new HashMap<>();
+public class BulletCollisionDetector implements PhysicsFilter {
+    private final NewGameWorld gameWorld;
+    private final List<Bullet> worldBullets = new ArrayList<>();
 
-        for(int i = 0, length = players.length; i < length; i++) {
-            testPlayerBullets(i, players, collisions);
-        }
-
-        return collisions;
+    public BulletCollisionDetector(final NewGameWorld gameWorld) {
+        this.gameWorld = gameWorld;
     }
 
-    private void testPlayerBullets(final int playerIndex, final Player[] players, final HashMap<Bullet, Player> collisions) {
-        final Player player = players[playerIndex];
-        final List<Bullet> bullets = player.getBulletsList();
-        final int numPlayers = players.length;
+    @Override
+    public void apply(final GameEntity gameEntity) {
+        if(!gameEntity.doesPhysicsApply(BulletCollisionDetector.class)) {
+            return;
+        }
 
-        bulletLoop:
-        for(final Bullet bullet: bullets) {
-            for(int i = 0; i < playerIndex; i++) {
-                if(isBulletColliding(players[i], bullet)) {
-                    collisions.put(bullet, players[i]);
-                    continue bulletLoop;
+        //Check if any bullets are colliding with the player and handle that
+        //the main game loop will handle transmitting status changes
+        if(gameEntity instanceof Player) {
+            final Player player = (Player)gameEntity;
+            for(int i = 0; i < worldBullets.size(); i++) {
+                final Bullet bullet = worldBullets.get(i);
+                if(isBulletColliding(player, bullet)) {
+                    player.setHealth(player.getHealth() - bullet.getDamage(), bullet.getOwner().getPlayerUsername());
+                    gameWorld.removeGameEntity(bullet);
+                    worldBullets.remove(bullet);
+                    i--;
                 }
             }
-            for(int i = playerIndex+1; i < numPlayers; i++) {
-                if(isBulletColliding(players[i], bullet)) {
-                    collisions.put(bullet, players[i]);
-                    continue bulletLoop;
-                }
+        }
+    }
+
+    @Override
+    public void prepare() {
+        worldBullets.clear();
+        final List<GameEntity> entities = gameWorld.getAllGameEntities();
+        for(final GameEntity entity: entities) {
+            if(entity instanceof Bullet) {
+                worldBullets.add((Bullet)entity);
             }
         }
     }

@@ -2,7 +2,7 @@ package com.becky.world.physics;
 
 import com.becky.world.entity.GameEntity;
 
-public class WorldBorderCollisionDetector {
+public class WorldBorderCollisionDetector implements PhysicsFilter {
     private final float maxX;
     private final float maxY;
     private float currentX;
@@ -63,7 +63,15 @@ public class WorldBorderCollisionDetector {
         expand(change);
     }
 
-    public void keepEntityInBorder(final GameEntity entity) {
+    @Override
+    public void prepare() {}
+
+    @Override
+    public void apply(final GameEntity entity) {
+        if(!entity.doesPhysicsApply(WorldBorderCollisionDetector.class)) {
+            return;
+        }
+
         final float xPosition = entity.getXPosition();
         if(xPosition < 0.0f) {
             entity.setXPosition(1.0f);

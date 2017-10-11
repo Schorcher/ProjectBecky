@@ -10,8 +10,6 @@ public abstract class Bullet extends GameEntity {
     public static final int STATE_UPDATED_BULLET = 1;
     public static final int STATE_DEAD_BULLET = 2;
 
-    protected final Point2D.Float position = new Point2D.Float(0.0f, 0.0f);
-    protected final Point2D.Float velocity = new Point2D.Float(0.0f, 0.0f);
     protected final Player owner;
     protected final int damageAmount;
     protected int state = Bullet.STATE_NEW_BULLET;
@@ -23,6 +21,7 @@ public abstract class Bullet extends GameEntity {
                      final float xVelocity,
                      final float yVelocity,
                      final int damageAmount) {
+        super(owner.getGameWorld());
         this.owner = owner;
         position.x = xPosition;
         position.y = yPosition;
@@ -70,39 +69,9 @@ public abstract class Bullet extends GameEntity {
     public abstract float getRemainingHealth();
 
     @Override
-    public float getXPosition() {
-        return position.x;
-    }
-
-    @Override
-    public float getYPosition() {
-        return position.y;
-    }
-
-    @Override
-    public void setXPosition(final float xPosition) {
-        position.x = xPosition;
-    }
-
-    @Override
-    public void setYPosition(final float yPosition) {
-        position.y = yPosition;
-    }
-
-    @Override
-    public float getXVelocity() {
-        return velocity.x;
-    }
-
-    @Override
-    public float getYVelocity() {
-        return velocity.y;
-    }
-
-    @Override
     public void setXVelocity(final float xVelocity) {
         velocity.x = xVelocity;
-        if(xVelocity < 0.1f) {
+        if(Math.abs(xVelocity) < 0.1f) {
             this.state = STATE_DEAD_BULLET;
         }
     }
@@ -110,7 +79,7 @@ public abstract class Bullet extends GameEntity {
     @Override
     public void setYVelocity(final float yVelocity) {
         velocity.y = yVelocity;
-        if(yVelocity < 0.1f) {
+        if(Math.abs(yVelocity) < 0.1f) {
             this.state = STATE_DEAD_BULLET;
         }
     }

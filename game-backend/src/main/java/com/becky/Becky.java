@@ -1,7 +1,7 @@
 package com.becky;
 
 import com.becky.networking.SimpleServer;
-import com.becky.world.GameWorld;
+import com.becky.world.NewGameWorld;
 
 import java.net.InetSocketAddress;
 
@@ -13,7 +13,7 @@ public class Becky {
 
     public static void main(final String[] args) {
         final InetSocketAddress socketAddress = new InetSocketAddress(3000);
-        final GameWorld game = new GameWorld();
+        final NewGameWorld game = new NewGameWorld();
         final SimpleServer simpleServer = new SimpleServer(socketAddress, game);
 
         simpleServer.start();

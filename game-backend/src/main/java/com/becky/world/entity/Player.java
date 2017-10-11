@@ -1,24 +1,18 @@
 package com.becky.world.entity;
 
+import com.becky.world.NewGameWorld;
+import com.becky.world.physics.BulletCollisionDetector;
+import com.becky.world.physics.PhysicsFilter;
+import com.becky.world.physics.WorldBorderCollisionDetector;
 import com.becky.world.weapon.DefaultGun;
 import com.becky.world.weapon.Gun;
-import com.becky.world.GameWorld;
 import org.java_websocket.WebSocket;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 public class Player extends GameEntity {
     public static final float MAX_VELOCITY = 600.0f;
     public static final float ACCELERATION = 1800.0f;
-
-    //position and other vectors
-    private final Point2D.Float position = new Point2D.Float(0.0f, 0.0f);
-    private final Point2D.Float velocity = new Point2D.Float(0.0f, 0.0f);
-    private final Point2D.Float acceleration = new Point2D.Float(0.0f, 0.0f);
-    private float angles;
 
     //player metadata
     private String playerUsername;
@@ -36,14 +30,17 @@ public class Player extends GameEntity {
     private final List<Bullet> bulletsList = new ArrayList<>();
     private boolean firingWeapon = false;
 
-    //game entity fields
-    private final GameWorld containerWorld;
+    //player update information
+    private boolean playerHealthUpdated = false;
+    private boolean playerScoreUpdated = false;
+    private String healthAffectedBy = "";
 
-    public Player(final GameWorld gameWorld, final String playerUsername, final String authenticationString, final WebSocket connection) {
+    public Player(final NewGameWorld gameWorld, final String playerUsername, final String authenticationString, final WebSocket connection) {
+        super(gameWorld);
+        super.setPhysicsFilters(WorldBorderCollisionDetector.class, BulletCollisionDetector.class);
         this.playerUsername = playerUsername;
         this.connection = connection;
         this.authenticationString = authenticationString;
-        this.containerWorld = gameWorld;
     }
 
     public String getAuthenticationString() {
@@ -62,82 +59,13 @@ public class Player extends GameEntity {
         this.playerUsername = playerUsername;
     }
 
-    @Override
-    public float getXPosition() {
-        return this.position.x;
-    }
-
-    @Override
-    public void setXPosition(final float position) {
-        this.position.x = position;
-    }
-
-    @Override
-    public float getYPosition() {
-        return this.position.y;
-    }
-
-    @Override
-    public void setYPosition(final float position) {
-        this.position.y = position;
-    }
-
-    @Override
-    public float getXVelocity() {
-        return this.velocity.x;
-    }
-
-    @Override
-    public void setXVelocity(final float velocity) {
-        this.velocity.x = velocity;
-    }
-
-    @Override
-    public float getYVelocity() {
-        return velocity.y;
-    }
-
-    @Override
-    public void setYVelocity(final float velocity) {
-        this.velocity.y = velocity;
-    }
-
-    @Override
-    public float getXAcceleration() {
-        return this.acceleration.x;
-    }
-
-    @Override
-    public void setXAcceleration(final float accelaration) {
-        this.acceleration.x = accelaration;
-    }
-
-    @Override
-    public float getYAcceleration() {
-        return this.acceleration.y;
-    }
-
-    @Override
-    public void setYAcceleration(final float accelaration) {
-        this.acceleration.y = accelaration;
-    }
-
-    @Override
-    public void setAngles(final float angles) {
-        this.angles = angles;
-    }
-
-    @Override
-    public float getAngles() {
-        return this.angles;
-    }
-
     public int getHealth() {
         return this.health;
     }
 
-    public void setHealth(final int health) {
+    public void setHealth(final int health, final String affectedBy) {
         this.health = Math.max(health, 0);
+        this.healthAffectedBy = affectedBy == null ? "" : affectedBy;
     }
 
     public int getCollisionRadius() {
@@ -186,21 +114,25 @@ public class Player extends GameEntity {
 
     public void addScore(final int amt) {
         this.score += amt;
+        this.playerScoreUpdated = true;
     }
 
-    @Override
-    public Collection<GameEntity> getChildren() {
-        return Collections.emptyList();
+    public void resetStatusUpdateFlags() {
+        this.playerScoreUpdated = false;
+        this.playerHealthUpdated = false;
+        this.healthAffectedBy = "";
     }
 
-    @Override
-    public GameEntity getParent() {
-        return null;
+    public boolean isPlayerHealthUpdated() {
+        return this.playerHealthUpdated;
     }
 
-    @Override
-    public GameWorld getGameWorld() {
-        return this.containerWorld;
+    public String getHealthAffectedBy() {
+        return this.healthAffectedBy;
+    }
+
+    public boolean isPlayerScoreUpdated() {
+        return this.playerScoreUpdated;
     }
 
     @Override
@@ -227,64 +159,64 @@ public class Player extends GameEntity {
 
         //floats don't do well with ==
         //x component
-        if(Math.abs(this.acceleration.x) < 0.05f) {
+        if(Math.abs(super.acceleration.x) < 0.05f) {
             //decelerating
-            if(this.velocity.x > 0.0f) {
-                this.velocity.x -= Player.ACCELERATION * fraction;
-                if(this.velocity.x < 0.0f) {
-                    this.velocity.x = 0.0f;
+            if(super.velocity.x > 0.0f) {
+                super.velocity.x -= Player.ACCELERATION * fraction;
+                if(super.velocity.x < 0.0f) {
+                    super.velocity.x = 0.0f;
                 }
             }
             else {
-                this.velocity.x += Player.ACCELERATION * fraction;
-                if(this.velocity.x > 0.0f) {
-                    this.velocity.x = 0.0f;
+                super.velocity.x += Player.ACCELERATION * fraction;
+                if(super.velocity.x > 0.0f) {
+                    super.velocity.x = 0.0f;
                 }
             }
         }
         else {
             //accelerating
-            this.velocity.x += this.acceleration.x * fraction;
+            super.velocity.x += super.acceleration.x * fraction;
         }
 
         //y component
-        if(Math.abs(this.acceleration.y) < 0.5f) {
+        if(Math.abs(super.acceleration.y) < 0.5f) {
             //decelerating
-            if(this.velocity.y > 0) {
-                this.velocity.y -= Player.ACCELERATION * fraction;
-                if(this.velocity.y < 0.0f) {
-                    this.velocity.y = 0.0f;
+            if(super.velocity.y > 0) {
+                super.velocity.y -= Player.ACCELERATION * fraction;
+                if(super.velocity.y < 0.0f) {
+                    super.velocity.y = 0.0f;
                 }
             }
             else {
-                this.velocity.y += Player.ACCELERATION * fraction;
-                if(this.velocity.y > 0.0f) {
-                    this.velocity.y = 0.0f;
+                super.velocity.y += Player.ACCELERATION * fraction;
+                if(super.velocity.y > 0.0f) {
+                    super.velocity.y = 0.0f;
                 }
             }
         }
         else {
             //accelerating
-            this.velocity.y += this.acceleration.y * fraction;
+            super.velocity.y += super.acceleration.y * fraction;
         }
 
         capVelocity();
-        this.position.x += this.velocity.x * fraction;
-        this.position.y += this.velocity.y * fraction;
+        super.position.x += super.velocity.x * fraction;
+        super.position.y += super.velocity.y * fraction;
     }
 
     private void capVelocity() {
         if(this.velocity.x > MAX_VELOCITY) {
-            this.velocity.x = MAX_VELOCITY;
+            super.velocity.x = MAX_VELOCITY;
         }
         else if(this.velocity.x < -MAX_VELOCITY) {
-            this.velocity.x = -MAX_VELOCITY;
+            super.velocity.x = -MAX_VELOCITY;
         }
         if(this.velocity.y > MAX_VELOCITY) {
-            this.velocity.y = MAX_VELOCITY;
+            super.velocity.y = MAX_VELOCITY;
         }
         else if(this.velocity.y < -MAX_VELOCITY) {
-            this.velocity.y = -MAX_VELOCITY;
+            super.velocity.y = -MAX_VELOCITY;
         }
     }
 }

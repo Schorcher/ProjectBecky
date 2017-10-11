@@ -1,6 +1,9 @@
 package com.becky.networking.message;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.List;
 
 public class ServerPlayerUpdate implements NetworkedMessage {
     private float posX;
@@ -67,5 +70,9 @@ public class ServerPlayerUpdate implements NetworkedMessage {
     @Override
     public String jsonSerialize() {
         return ServerPlayerUpdate.class.getSimpleName() + ":" + new JSONObject(this).toString();
+    }
+
+    public static String jsonSerializeAll(final List<ServerPlayerUpdate> updates) {
+        return ServerPlayerUpdate.class.getSimpleName() + "[]:" + new JSONArray(updates).toString();
     }
 }

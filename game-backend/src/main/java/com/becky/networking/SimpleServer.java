@@ -9,7 +9,7 @@ import com.becky.networking.message.PlayerListChange;
 import com.becky.networking.message.ServerPlayerUpdate;
 import com.becky.networking.message.ServerUsernameRequestStatus;
 import com.becky.networking.message.UsernameChangeRequest;
-import com.becky.world.GameWorld;
+import com.becky.world.NewGameWorld;
 import com.becky.world.entity.Bullet;
 import com.becky.world.entity.Player;
 import org.java_websocket.WebSocket;
@@ -18,15 +18,14 @@ import org.java_websocket.server.WebSocketServer;
 import org.json.JSONArray;
 
 import java.net.InetSocketAddress;
-import java.nio.channels.NotYetConnectedException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 public class SimpleServer extends WebSocketServer {
-    private final GameWorld gameInstance;
+    private final NewGameWorld gameInstance;
 
-    public SimpleServer(final InetSocketAddress addr, final GameWorld gameInstance){
+    public SimpleServer(final InetSocketAddress addr, final NewGameWorld gameInstance){
         super(addr);
         this.gameInstance = gameInstance;
     }
@@ -86,7 +85,7 @@ public class SimpleServer extends WebSocketServer {
         initialJoinState.setInitialLocationY(player.getYPosition());
 
         //json serialize and transmit the initial join state to the client
-        webSocket.send(initialJoinState.jsonSerialize());
+        gameInstance.getMessageTransmitter().transmitMessage(player, initialJoinState.jsonSerialize());
         System.out.println("On open finished...");
     }
 
@@ -192,10 +191,12 @@ public class SimpleServer extends WebSocketServer {
         final String jsonMessage = listChange.jsonSerialize();
 
         final Collection<Player> allPlayers = gameInstance.getAllPlayers();
+        final PlayerMessageTransmitter transmitter = gameInstance.getMessageTransmitter();
         for(final Player player: allPlayers) {
-            if(player.getConnection().isOpen()) {
-                player.getConnection().send(jsonMessage);
+            if(player.getPlayerUsername().equals(joinedUsername)) {
+                continue;
             }
+            transmitter.transmitMessage(player, jsonMessage);
         }
     }
 
@@ -216,9 +217,7 @@ public class SimpleServer extends WebSocketServer {
 
         final InitialPlayerList initialPlayerList = new InitialPlayerList();
         initialPlayerList.setPlayers(updates);
-        if(dest.getConnection().isOpen()) {
-            dest.getConnection().send(initialPlayerList.jsonSerialize());
-        }
+        gameInstance.getMessageTransmitter().transmitMessage(dest, initialPlayerList.jsonSerialize());
     }
 
     private void sendInitialBulletsList(final Player dest) {
@@ -233,10 +232,6 @@ public class SimpleServer extends WebSocketServer {
             }
         }
 
-        final JSONArray jsonArray = new JSONArray(bulletInfosList);
-        final String serializedMessage = "BulletInfo[]:" + jsonArray.toString();
-        if(dest.getConnection().isOpen()) {
-            dest.getConnection().send(serializedMessage);
-        }
+        gameInstance.getMessageTransmitter().transmitMessage(dest, BulletInfo.jsonSerialize(bulletInfosList));
     }
 }

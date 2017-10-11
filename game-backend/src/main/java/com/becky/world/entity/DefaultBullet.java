@@ -1,17 +1,10 @@
 package com.becky.world.entity;
 
-
-import com.becky.world.GameWorld;
-
-import java.util.Collection;
-import java.util.Collections;
-
 public class DefaultBullet extends Bullet {
     private static final float TRAVEL_DISTANCE = 2000.0f;
     private static final int DAMAGE_FACTOR = 1;
 
     private float remainingHealth = TRAVEL_DISTANCE;
-    private final GameWorld gameWorld;
 
     public DefaultBullet(final Player owner,
                          final float xPosition,
@@ -19,35 +12,11 @@ public class DefaultBullet extends Bullet {
                          final float xVelocity,
                          final float yVelocity) {
         super(owner, xPosition, yPosition, xVelocity, yVelocity, DAMAGE_FACTOR);
-        gameWorld = owner.getGameWorld();
     }
 
     @Override
     public float getRemainingHealth() {
         return this.remainingHealth;
-    }
-
-    @Override
-    public void setAngles(final float angles) {}
-
-    @Override
-    public float getAngles() {
-        return 0.0f;
-    }
-
-    @Override
-    public Collection<GameEntity> getChildren() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public GameEntity getParent() {
-        return null;
-    }
-
-    @Override
-    public GameWorld getGameWorld() {
-        return this.gameWorld;
     }
 
     @Override
