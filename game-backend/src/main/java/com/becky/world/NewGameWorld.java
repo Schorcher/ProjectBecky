@@ -116,6 +116,7 @@ public class NewGameWorld implements Runnable {
                     pointsUpdate.setUsername(player.getPlayerUsername());
                     messageTransmitter.transmitMessage(player, pointsUpdate.jsonSerialize());
                 }
+                player.resetStatusUpdateFlags();
             }
             else if(entity instanceof Bullet) {
                 final Bullet bullet = (Bullet)entity;

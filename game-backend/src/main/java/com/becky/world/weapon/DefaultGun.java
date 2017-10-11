@@ -37,7 +37,8 @@ public class DefaultGun implements Gun {
         final float pX = cos * 32 + weilder.getXPosition();
         final float pY = sin * 32 + weilder.getYPosition();
         final Bullet bullet = new DefaultBullet(weilder, pX, pY, vX, vY);
-        weilder.addBullet(bullet);
+        bullet.setState(Bullet.STATE_NEW_BULLET);
+        weilder.getGameWorld().addGameEntity(bullet);
         lastFireTime = currentTime;
     }
 }

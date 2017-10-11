@@ -35,9 +35,9 @@ public class BulletCollisionDetector implements PhysicsFilter {
             final Player player = (Player)gameEntity;
             for(int i = 0; i < worldBullets.size(); i++) {
                 final Bullet bullet = worldBullets.get(i);
-                if(isBulletColliding(player, bullet)) {
+                if(!player.equals(bullet.getOwner()) && isBulletColliding(player, bullet)) {
                     player.setHealth(player.getHealth() - bullet.getDamage(), bullet.getOwner().getPlayerUsername());
-                    gameWorld.removeGameEntity(bullet);
+                    bullet.setState(Bullet.STATE_DEAD_BULLET);
                     worldBullets.remove(bullet);
                     i--;
                 }

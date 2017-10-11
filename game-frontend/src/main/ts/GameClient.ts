@@ -18,8 +18,8 @@ class GameClient implements GameEntity {
     static TIME_PER_FRAME: number = 1000.0 / GameClient.FRAMES_PER_SECOND;
 
     //keep these the same as the server. Might have server send message to client with these values in future
-    private worldWidth: number = 4000;
-    private worldHeight: number = 4000;
+    private worldWidth: number = 8000;
+    private worldHeight: number = 8000;
 
     private canvas: HTMLCanvasElement;
     private connection: WebSocket;

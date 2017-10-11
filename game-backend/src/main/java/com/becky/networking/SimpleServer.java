@@ -11,6 +11,7 @@ import com.becky.networking.message.ServerUsernameRequestStatus;
 import com.becky.networking.message.UsernameChangeRequest;
 import com.becky.world.NewGameWorld;
 import com.becky.world.entity.Bullet;
+import com.becky.world.entity.GameEntity;
 import com.becky.world.entity.Player;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
@@ -209,9 +210,9 @@ public class SimpleServer extends WebSocketServer {
             }
 
             final ServerPlayerUpdate update = new ServerPlayerUpdate();
-            update.setPlayerName(dest.getPlayerUsername());
-            update.setPosX(dest.getXPosition());
-            update.setPosY(dest.getYPosition());
+            update.setPlayerName(player.getPlayerUsername());
+            update.setPosX(player.getXPosition());
+            update.setPosY(player.getYPosition());
             updates.add(update);
         }
 
@@ -221,12 +222,12 @@ public class SimpleServer extends WebSocketServer {
     }
 
     private void sendInitialBulletsList(final Player dest) {
-        final Collection<Player> allPlayers = gameInstance.getAllPlayers();
+        final List<GameEntity> entities = gameInstance.getAllGameEntities();
         final List<BulletInfo> bulletInfosList = new ArrayList<>();
-        for(final Player player: allPlayers) {
-            final List<Bullet> bullets = player.getBulletsList();
-            for(final Bullet bullet: bullets) {
-                final BulletInfo info = new BulletInfo(player.getPlayerUsername(), Bullet.STATE_NEW_BULLET,
+        for(final GameEntity entity: entities) {
+            if(entity instanceof Bullet) {
+                final Bullet bullet = (Bullet)entity;
+                final BulletInfo info = new BulletInfo(bullet.getOwner().getPlayerUsername(), Bullet.STATE_NEW_BULLET,
                     bullet.getEntityId(), bullet.getXVelocity(), bullet.getYVelocity(), bullet.getXPosition(), bullet.getYPosition());
                 bulletInfosList.add(info);
             }

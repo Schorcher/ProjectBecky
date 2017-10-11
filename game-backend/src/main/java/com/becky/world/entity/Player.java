@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Player extends GameEntity {
-    public static final float MAX_VELOCITY = 600.0f;
+    public static final float MAX_VELOCITY = 450.0f;
     public static final float ACCELERATION = 1800.0f;
 
     //player metadata
@@ -27,7 +27,6 @@ public class Player extends GameEntity {
 
     //player state information
     private Gun playerGun = new DefaultGun(this);
-    private final List<Bullet> bulletsList = new ArrayList<>();
     private boolean firingWeapon = false;
 
     //player update information
@@ -66,6 +65,7 @@ public class Player extends GameEntity {
     public void setHealth(final int health, final String affectedBy) {
         this.health = Math.max(health, 0);
         this.healthAffectedBy = affectedBy == null ? "" : affectedBy;
+        this.playerHealthUpdated = true;
     }
 
     public int getCollisionRadius() {
@@ -90,18 +90,6 @@ public class Player extends GameEntity {
 
     public void setGun(final Gun gun) {
         this.playerGun = gun;
-    }
-
-    public List<Bullet> getBulletsList() {
-        return new ArrayList<>(this.bulletsList);
-    }
-
-    public void addBullet(final Bullet bullet) {
-        this.bulletsList.add(bullet);
-    }
-
-    public void removeBullet(final Bullet bullet) {
-        this.bulletsList.remove(bullet);
     }
 
     public void setFiringWeapon(final boolean firing) {
@@ -139,13 +127,6 @@ public class Player extends GameEntity {
     public void tick(final long elapsedTime) {
         tickVelocity(elapsedTime);
         tickShooting();
-        tickBullets(elapsedTime);
-    }
-
-    private void tickBullets(final long elapsedTime) {
-        for(final Bullet bullet: bulletsList) {
-            bullet.tick(elapsedTime);
-        }
     }
 
     private void tickShooting() {

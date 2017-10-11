@@ -1,5 +1,7 @@
 package com.becky.world.entity;
 
+import com.becky.world.physics.WorldBorderCollisionDetector;
+
 import java.awt.geom.Point2D;
 
 /**
@@ -22,6 +24,7 @@ public abstract class Bullet extends GameEntity {
                      final float yVelocity,
                      final int damageAmount) {
         super(owner.getGameWorld());
+        super.setPhysicsFilters(WorldBorderCollisionDetector.class);
         this.owner = owner;
         position.x = xPosition;
         position.y = yPosition;
