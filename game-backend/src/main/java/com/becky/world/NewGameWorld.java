@@ -9,6 +9,7 @@ import com.becky.world.entity.Player;
 import com.becky.world.entity.npc.NpcSpawner;
 import com.becky.world.physics.BulletCollisionDetector;
 import com.becky.world.physics.PhysicsFilter;
+import com.becky.world.physics.PlayerCollisionDetector;
 import com.becky.world.physics.WorldBorderCollisionDetector;
 import org.java_websocket.WebSocket;
 
@@ -32,6 +33,7 @@ public class NewGameWorld implements Runnable {
     public NewGameWorld() {
         physicsFilters.add(new BulletCollisionDetector(this));
         physicsFilters.add(new WorldBorderCollisionDetector(8000.0f, 8000.0f));
+        physicsFilters.add(new PlayerCollisionDetector(this));
     }
 
     public void start() {
