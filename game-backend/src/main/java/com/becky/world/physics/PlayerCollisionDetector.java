@@ -25,16 +25,37 @@ public class PlayerCollisionDetector implements PhysicsFilter {
         //the main game loop will handle transmitting status changes
         if(gameEntity instanceof Player) {
             final Player player = (Player)gameEntity;
+            boolean colliding = false;
             for(int i = 0; i < worldPlayer.size(); i++) {
                 final Player player1 = worldPlayer.get(i);
-                if(isPlayerColliding(player, player1)) {
-                    player.setXVelocity(0-player.getXVelocity()*2);
-                    player.setYVelocity(0-player.getYVelocity()*2);
-                    player.setHealth(player.getHealth()-1, "player Collision");
-                    player1.setXVelocity(0-player1.getXVelocity()*2);
-                    player1.setYVelocity(0-player1.getYVelocity()*2);
-                    player1.setHealth(player1.getHealth()-1, "player Collision");
+                if(player1.equals(player)) {
+                    continue;
                 }
+                if(isPlayerColliding(player, player1)) {
+                    colliding = true;
+
+                    //get angles
+                    final float angle = getAngleBetweenPlayers(player, player1);
+                    final float angle1 = getAngleBetweenPlayers(player1, player);
+
+                    //set velocity of players
+                    player.setXVelocity(player.getXVelocity() + 300.0f * (float)StrictMath.cos(angle));
+                    player.setYVelocity(player.getYVelocity() + 300.0f * (float)StrictMath.sin(angle));
+                    player1.setXVelocity(player1.getXVelocity() + 300.0f * (float)StrictMath.cos(angle1));
+                    player1.setYVelocity(player1.getYVelocity() + 300.0f * (float)StrictMath.sin(angle1));
+
+                    //set player positions so they are just barely apart from each other
+                    player.setXPosition(player1.getXPosition()
+                            + (player1.getCollisionRadius() + player.getCollisionRadius())
+                            * (float)StrictMath.cos(angle));
+                    player.setYPosition(player1.getYPosition()
+                            + (player1.getCollisionRadius() + player.getCollisionRadius())
+                            * (float)StrictMath.sin(angle));
+                }
+            }
+
+            if(colliding) {
+                worldPlayer.remove(player);
             }
         }
     }
@@ -58,5 +79,11 @@ public class PlayerCollisionDetector implements PhysicsFilter {
 
     private float distance(final float x1, final float y1, final float x2, final float y2) {
         return (float)StrictMath.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+    }
+
+    private float getAngleBetweenPlayers(final Player player, final Player otherPlayer) {
+        final float deltaX = player.getXPosition() - otherPlayer.getXPosition();
+        final float deltaY = player.getYPosition() - otherPlayer.getYPosition();
+        return (float)StrictMath.atan2(deltaY, deltaX);
     }
 }

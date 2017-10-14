@@ -3,6 +3,7 @@ package com.becky.world.entity;
 import com.becky.world.NewGameWorld;
 import com.becky.world.physics.BulletCollisionDetector;
 import com.becky.world.physics.PhysicsFilter;
+import com.becky.world.physics.PlayerCollisionDetector;
 import com.becky.world.physics.WorldBorderCollisionDetector;
 import com.becky.world.weapon.DefaultGun;
 import com.becky.world.weapon.Gun;
@@ -36,7 +37,9 @@ public class Player extends GameEntity {
 
     public Player(final NewGameWorld gameWorld, final String playerUsername, final String authenticationString, final WebSocket connection) {
         super(gameWorld);
-        super.setPhysicsFilters(WorldBorderCollisionDetector.class, BulletCollisionDetector.class);
+        super.setPhysicsFilters(WorldBorderCollisionDetector.class,
+                                BulletCollisionDetector.class,
+                                PlayerCollisionDetector.class);
         this.playerUsername = playerUsername;
         this.connection = connection;
         this.authenticationString = authenticationString;
@@ -62,9 +65,9 @@ public class Player extends GameEntity {
         return this.health;
     }
 
-    public void setHealth(final int health, final String affectedBy) {
+    public void setHealth(final int health, final String attackerUsername) {
         this.health = Math.max(health, 0);
-        this.healthAffectedBy = affectedBy == null ? "" : affectedBy;
+        this.healthAffectedBy = attackerUsername == null ? "" : attackerUsername;
         this.playerHealthUpdated = true;
     }
 
