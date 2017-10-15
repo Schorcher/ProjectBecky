@@ -58,10 +58,6 @@ class ClientPlayer implements Player, Updateable, GameEntity {
         this.angle = angle;
     }
 
-    public aimAtMouse = (mouseX: number, mouseY: number): void => {
-        //TODO: Aim player towards mouse (phase 2)
-    }
-
     public getMovingUp = (): boolean => {
         return this.moveUp;
     }

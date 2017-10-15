@@ -24,7 +24,7 @@ public abstract class Bullet extends GameEntity {
                      final float yVelocity,
                      final int damageAmount) {
         super(owner.getGameWorld());
-        super.setPhysicsFilters(WorldBorderCollisionDetector.class);
+        super.addPhysicsFilter(WorldBorderCollisionDetector.class);
         this.owner = owner;
         position.x = xPosition;
         position.y = yPosition;

@@ -37,9 +37,9 @@ public class Player extends GameEntity {
 
     public Player(final NewGameWorld gameWorld, final String playerUsername, final String authenticationString, final WebSocket connection) {
         super(gameWorld);
-        super.setPhysicsFilters(WorldBorderCollisionDetector.class,
-                                BulletCollisionDetector.class,
-                                PlayerCollisionDetector.class);
+        super.addPhysicsFilter(WorldBorderCollisionDetector.class);
+        super.addPhysicsFilter(BulletCollisionDetector.class);
+        super.addPhysicsFilter(PlayerCollisionDetector.class);
         this.playerUsername = playerUsername;
         this.connection = connection;
         this.authenticationString = authenticationString;

@@ -108,8 +108,7 @@ public abstract class GameEntity {
         return this.filterApplies.contains(physics);
     }
 
-    protected void setPhysicsFilters(final Class<? extends PhysicsFilter>... filters) {
-        this.filterApplies.clear();
-        this.filterApplies.addAll(Arrays.asList(filters));
+    protected void addPhysicsFilter(final Class<? extends PhysicsFilter> filter) {
+        filterApplies.add(filter);
     }
 }
