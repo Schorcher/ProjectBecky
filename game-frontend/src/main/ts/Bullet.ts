@@ -15,6 +15,8 @@ class Bullet implements Renderable, Updateable, GameEntity {
     private owner: Player;
     private position: Point;
     private velocity: Point;
+    private lagCompensateVelocity: Point;
+    private lagCompensateFrames: number;
     private fillColor: string = "#a8ff96";
     private strokeColor: string = "#000000";
     private id: number;
@@ -23,6 +25,7 @@ class Bullet implements Renderable, Updateable, GameEntity {
         this.owner = owner;
         this.position = new Point(position.getX(), position.getY());
         this.velocity = new Point(velocity.getX(), velocity.getY());
+        this.lagCompensateVelocity = new Point(0, 0);
         this.id = id;
     }
 
@@ -67,12 +70,34 @@ class Bullet implements Renderable, Updateable, GameEntity {
         return this.position.getY();
     }
 
+    public getXVelocity(): number {
+        return this.velocity.getX();
+    }
+
+    public getYVelocity(): number {
+        return this.velocity.getY();
+    }
+
     public setPosition(x: number, y: number): void {
         this.position = new Point(x, y);
     }
 
-    public update(ellapsedTime: number): void {
-        //TODO: When lag compensation starts being a thing then update
+    public update(elapsedTime: number): void {
+        if(!LagCompensator.enabled) {
+            return;
+        }
+
+        let multiplier: number = elapsedTime / 1000.0;
+        this.position.addX((this.velocity.getX() + this.lagCompensateVelocity.getX()) * multiplier);
+        this.position.addY((this.velocity.getY() + this.lagCompensateVelocity.getY()) * multiplier);
+
+        if(this.lagCompensateFrames > 0) {
+            this.lagCompensateFrames--;
+            if(this.lagCompensateFrames == 0) {
+                this.lagCompensateVelocity.setX(0);
+                this.lagCompensateVelocity.setY(0);
+            }
+        }
     }
 
     public getChildEntities(): Set<GameEntity> {
@@ -81,5 +106,10 @@ class Bullet implements Renderable, Updateable, GameEntity {
 
     public getParentEntity(): GameEntity {
         return this.owner;
+    }
+
+    public setLagCompensateVelocity(lagCompensateVelocity: Point, correctionFps: number): void {
+        this.lagCompensateVelocity = lagCompensateVelocity;
+        this.lagCompensateFrames = correctionFps;
     }
 }

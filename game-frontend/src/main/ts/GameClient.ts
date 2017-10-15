@@ -32,7 +32,7 @@ class GameClient implements GameEntity {
     private authenticationString: string;
     private background: GameBackground;
     private numFrames: number = 0;
-    private lagCompensator: LagCompensator = new LagCompensator(8);
+    private lagCompensator: LagCompensator = new LagCompensator(30);
 
     /**
      * Creates a new GameClient instance.
@@ -139,6 +139,11 @@ class GameClient implements GameEntity {
         for(let i: number = 0; i < this.opponents.length; i++) {
             this.opponents.get(i).update(elapsedTime);
         }
+
+        //update bullets
+        for(let i: number = 0; i < this.bullets.length; i++) {
+            this.bullets.get(i).update(elapsedTime);
+        }
     }
 
     private draw = (): void => {
@@ -222,7 +227,7 @@ class GameClient implements GameEntity {
 
                 //is the player update for me
                 if(this.player.getUsername() === serverUpdate.playerName) {
-                    this.player.setPosition(serverUpdate.posX, serverUpdate.posY);
+                    this.lagCompensator.compensateClientPlayer(this.player, serverUpdate);
                 }
                 else {
                     //the player update is likely for another joined player
@@ -255,13 +260,14 @@ class GameClient implements GameEntity {
                     }
                     this.bullets.add(bullet);
                     this.renderer.addRenderable(bullet);
+                    this.lagCompensator.compensateBullet(bullet, bulletInfo);
                 }
                 else if(bulletInfo.state === 1) { //updated bullet
                     let bullet: Bullet = this.getBulletEntityById(bulletInfo.bulletId);
                     if(bullet === null) {
                         return;
                     }
-                    bullet.setPosition(bulletInfo.positionX, bulletInfo.positionY);
+                    this.lagCompensator.compensateBullet(bullet, bulletInfo);
                 }
                 else if(bulletInfo.state === 2) { //dead bullet
                     let bullet: Bullet = this.getBulletEntityById(bulletInfo.bulletId);
@@ -299,7 +305,13 @@ class GameClient implements GameEntity {
         }
         else if(message.substring(0, 5) === "PING:") {
             let time: number = parseInt(message.substring(5));
-            this.lagCompensator.latency = Math.floor((Date.now() - time) / 2);
+            let latency: number = Math.floor((Date.now() - time) / 2);
+            if(latency < this.lagCompensator.latency) {
+                this.lagCompensator.latency = Math.max(latency, this.lagCompensator.latency - 5);
+            }
+            else {
+                this.lagCompensator.latency = Math.min(latency, this.lagCompensator.latency + 5);
+            }
         }
         else if((object = PointsUpdate.getValidObjectFromJson(message)) !== null) {
             let points: PointsUpdate = object as PointsUpdate;

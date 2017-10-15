@@ -5,22 +5,12 @@
 class ServerPlayerUpdate {
     public posX: number;
     public posY: number;
+    public velX: number;
+    public velY: number;
+    public accelX: number;
+    public accelY: number;
     public playerName: string;
-
-    //TODO: Phase 2 uncomment the following fields
-    //private accelX: number;
-    //private accelY: number;
-    //private velX: number;
-    //private velY: number;
-
-    //TODO: Phase 2 uncomment the following methods
-    //public getVelocity(): Point {
-    //    return new Point(this.velX, this.velY);
-    //}
-
-    //public getAcceleration(): Point {
-    //    return new Point(this.accelX, this.accelY);
-    //}
+    public angle: number;
 
     /**
      * Checks if a json string is a valid json array of ServerPlayerUpdate objects.

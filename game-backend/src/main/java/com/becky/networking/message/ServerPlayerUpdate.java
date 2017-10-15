@@ -8,40 +8,14 @@ import java.util.List;
 public class ServerPlayerUpdate implements NetworkedMessage {
     private float posX;
     private float posY;
+    private float velX;
+    private float velY;
+    private float accelX;
+    private float accelY;
+    private float angle;
     private String playerName;
 
     public ServerPlayerUpdate() {}
-
-    public ServerPlayerUpdate(final String json) {
-        final int jsonStartIndex = json.indexOf('{');
-        if(jsonStartIndex == -1) {
-            throw new IllegalArgumentException("Invalid JSON Object");
-        }
-        if(!json.startsWith(ServerPlayerUpdate.class.getSimpleName())) {
-            throw new IllegalArgumentException("Json object does not define a ServerPlayerUpdate object.");
-        }
-
-        final JSONObject obj = new JSONObject(json.substring(jsonStartIndex));
-        this.posX = obj.getInt("posX");
-        this.posY = obj.getInt("posY");
-        this.playerName = obj.getString("playerName");
-        //TODO: Update this to accommodate for new fields in future phases
-    }
-
-    //TODO: Phase 2 uncomment the following fields
-    //private accelX: number;
-    //private accelY: number;
-    //private velX: number;
-    //private velY: number;
-
-    //TODO: Phase 2 uncomment the following methods
-    //public getVelocity(): Point {
-    //    return new Point(this.velX, this.velY);
-    //}
-
-    //public getAcceleration(): Point {
-    //    return new Point(this.accelX, this.accelY);
-    //}
 
     public float getPosX() {
         return posX;
@@ -63,8 +37,48 @@ public class ServerPlayerUpdate implements NetworkedMessage {
         return playerName;
     }
 
+    public void setVelX(final float velocity) {
+        this.velX = velocity;
+    }
+
+    public float getVelX() {
+        return this.velX;
+    }
+
+    public void setVelY(final float velocity) {
+        this.velY = velocity;
+    }
+
+    public float getVelY() {
+        return this.velY;
+    }
+
+    public void setAccelX(final float acceleration) {
+        this.accelX = acceleration;
+    }
+
+    public float getAccelX() {
+        return this.accelX;
+    }
+
+    public void setAccelY(final float acceleration) {
+        this.accelY = acceleration;
+    }
+
+    public float getAccelY() {
+        return this.accelY;
+    }
+
     public void setPlayerName(final String playerName) {
         this.playerName = playerName;
+    }
+
+    public float getAngle() {
+        return this.angle;
+    }
+
+    public void setAngle(final float angle) {
+        this.angle = angle;
     }
 
     @Override

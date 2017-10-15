@@ -102,6 +102,11 @@ public class NewGameWorld implements Runnable {
                 update.setPlayerName(player.getPlayerUsername());
                 update.setPosX(player.getXPosition());
                 update.setPosY(player.getYPosition());
+                update.setVelX(player.getXVelocity());
+                update.setVelY(player.getYVelocity());
+                update.setAccelX(player.getXAcceleration());
+                update.setAccelY(player.getYAcceleration());
+                update.setAngle(player.getAngles());
                 playerUpdates.add(update);
 
                 if(player.isPlayerHealthUpdated()) {
@@ -133,6 +138,7 @@ public class NewGameWorld implements Runnable {
                     final BulletInfo info = new BulletInfo(
                         null, Bullet.STATE_DEAD_BULLET, bullet.getEntityId(), null, null, null, null);
                     bulletUpdates.add(info);
+                    this.removeGameEntity(entity);
                 }
                 else if(bulletState == Bullet.STATE_NEW_BULLET) {
                     final BulletInfo info = new BulletInfo(

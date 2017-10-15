@@ -48,9 +48,6 @@ class SimpleRenderer implements Renderer {
     }
 
     public draw(): void {
-        //clear the screen
-        this.renderingContext.clearRect(0, 0, this.renderingContext.canvas.width, this.renderingContext.canvas.height);
-
         //render the background
         this.gameBackground.draw(this.renderingContext, this.screenOrigin);
 

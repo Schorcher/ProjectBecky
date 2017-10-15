@@ -8,10 +8,14 @@
  * See OpponentPlayer for the other players.
  */
 class ClientPlayer implements Player, Updateable, GameEntity {
-    private acceleration: number = 20;
-    private max_velocity: number = 50;
+    static acceleration: number = 1800;
+    static max_velocity: number = 450;
 
     private position: Point;
+    private acceleration: Point;
+    private velocity: Point;
+    private lagCompensateVelocity: Point;
+    private lagCompensateFrames: number;
     private parent: GameEntity;
     private angle: number; //radian angle player is aiming towards
     private moveUp: boolean;
@@ -19,16 +23,17 @@ class ClientPlayer implements Player, Updateable, GameEntity {
     private moveLeft: boolean;
     private moveRight: boolean;
     private shooting: boolean;
-    private velocity: Point;
     private username: string;
-    private decelerating: boolean = true;
     private score: number = 0;
     private health: number = 10;
 
     constructor(parent: GameEntity, x: number = 0, y: number = 0, angle: number = 0, username: string) {
         this.position = new Point(x, y);
-        this.angle = angle;
         this.velocity = new Point(0, 0);
+        this.acceleration = new Point(0, 0);
+        this.lagCompensateVelocity = new Point(0, 0);
+        this.lagCompensateFrames = 0;
+        this.angle = angle;
         this.parent = parent;
         this.username = username;
     }
@@ -43,6 +48,37 @@ class ClientPlayer implements Player, Updateable, GameEntity {
 
     public getYPosition = (): number => {
         return this.position.getY();
+    }
+
+    public getXVelocity = (): number => {
+        return this.velocity.getX();
+    }
+
+    public getYVelocity = (): number => {
+        return this.velocity.getY();
+    }
+
+    public getXAcceleration = (): number => {
+        return this.acceleration.getX();
+    }
+
+    public getYAcceleration = (): number => {
+        return this.acceleration.getY();
+    }
+
+    public setVelocity = (x: number, y: number): void => {
+        this.velocity.setX(x);
+        this.velocity.setY(y);
+    }
+
+    public setLagCompensateVelocity(velocity: Point, frames: number): void {
+        this.lagCompensateVelocity = velocity;
+        this.lagCompensateFrames = frames;
+    }
+
+    public setAcceleration = (x: number, y: number): void => {
+        this.acceleration.setX(x);
+        this.acceleration.setY(y);
     }
 
     public setPosition = (x: number, y: number): void => {
@@ -76,18 +112,22 @@ class ClientPlayer implements Player, Updateable, GameEntity {
 
     public setMoveUp = (up: boolean): void => {
         this.moveUp = up;
+        this.acceleration.setY(-ClientPlayer.acceleration);
     }
 
     public setMoveDown = (down: boolean): void => {
         this.moveDown = down;
+        this.acceleration.setY(ClientPlayer.acceleration);
     }
 
     public setMoveLeft = (left: boolean): void => {
         this.moveLeft = left;
+        this.acceleration.setX(ClientPlayer.acceleration);
     }
 
     public setMoveRight = (right: boolean): void => {
         this.moveRight = right;
+        this.acceleration.setX(-ClientPlayer.acceleration);
     }
 
     public getChildEntities = (): Set<GameEntity> => {
@@ -96,14 +136,6 @@ class ClientPlayer implements Player, Updateable, GameEntity {
 
     public getParentEntity = (): GameEntity => {
         return this.parent;
-    }
-
-    public setDecelerating = (decelerating: boolean): void => {
-        this.decelerating = decelerating;
-    }
-
-    public isDecelerating = (): boolean => {
-        return this.decelerating;
     }
 
     public setShooting = (shooting: boolean): void => {
@@ -153,67 +185,90 @@ class ClientPlayer implements Player, Updateable, GameEntity {
     }
 
     public update(elapsedTime: number): void {
-        let fracSecond: number = elapsedTime / 1000.0;
-
         //this.updateVelocity(fracSecond);
-        this.capVelocity();
-        this.updatePosition(fracSecond);
-        this.handleBorderCollision();
+        if(LagCompensator.enabled) {
+            let fracSecond: number = elapsedTime / 1000.0;
+            this.updateVelocity(fracSecond);
+            this.updatePosition(fracSecond);
+            this.handleBorderCollision();
+        }
     }
 
     private updateVelocity(fracSecond: number): void {
-        //calculate partial second acceleration
-        if(this.decelerating) {
-            if(this.velocity.getX() < 0) {
-                this.velocity.addX(Math.min(fracSecond * this.acceleration, this.velocity.getX()));
+        //x component
+        if(Math.abs(this.acceleration.getX()) < 0.05) {
+            //decelerating
+            if(this.velocity.getX() > 0.05) {
+                this.velocity.addX(-ClientPlayer.acceleration * fracSecond);
+                if(this.velocity.getX() < 0.0) {
+                    this.velocity.setX(0);
+                }
             }
             else {
-                this.velocity.addX(Math.max(-fracSecond * this.acceleration, -this.velocity.getX()));
-            }
-
-            if(this.velocity.getY() < 0) {
-                this.velocity.addY(Math.min(fracSecond * this.acceleration, this.velocity.getY()));
-            }
-            else {
-                this.velocity.addY(Math.max(-fracSecond * this.acceleration, this.velocity.getY()));
+                this.velocity.addX(ClientPlayer.acceleration * fracSecond);
+                if(this.velocity.getX() > 0.0) {
+                    this.velocity.setX(0);
+                }
             }
         }
         else {
-            if(this.moveLeft) {
-                this.velocity.addX(-fracSecond * this.velocity.getX());
+            //accelerating
+            this.velocity.addX(this.acceleration.getX() * fracSecond);
+        }
+
+        //y component
+        if(Math.abs(this.acceleration.getY()) < 0.05) {
+            //decelerating
+            if(this.velocity.getY() > 0.05) {
+                this.velocity.addY(-ClientPlayer.acceleration * fracSecond);
+                if(this.velocity.getY() < 0.0) {
+                    this.velocity.setY(0);
+                }
             }
-            if(this.moveRight) {
-                this.velocity.addX(fracSecond * this.velocity.getX());
-            }
-            if(this.moveUp) {
-                this.velocity.addY(-fracSecond * this.velocity.getY());
-            }
-            if(this.moveDown) {
-                this.velocity.addY(fracSecond * this.velocity.getY());
+            else {
+                this.velocity.addY(ClientPlayer.acceleration * fracSecond);
+                if(this.velocity.getY() > 0.0) {
+                    this.velocity.setY(0);
+                }
             }
         }
+        else {
+            //accelerating
+            this.velocity.addY(this.acceleration.getY() * fracSecond);
+        }
+
+        //cap velocity
+        ClientPlayer.capVelocity(this.velocity);
     }
 
-    private capVelocity(): void {
+    static capVelocity(velocity: Point): void {
         //cap velocity
-        if(this.velocity.getX() > this.max_velocity) {
-            this.velocity.setX(this.max_velocity);
+        if(velocity.getX() > ClientPlayer.max_velocity) {
+            velocity.setX(ClientPlayer.max_velocity);
         }
-        else if(this.velocity.getX() < -this.max_velocity) {
-            this.velocity.setX(-this.max_velocity);
+        else if(velocity.getX() < -ClientPlayer.max_velocity) {
+            velocity.setX(-ClientPlayer.max_velocity);
         }
-        if(this.velocity.getY() > this.max_velocity) {
-            this.velocity.setY(this.max_velocity);
+        if(velocity.getY() > ClientPlayer.max_velocity) {
+            velocity.setY(ClientPlayer.max_velocity);
         }
-        else if(this.velocity.getY() < -this.max_velocity) {
-            this.velocity.setY(-this.max_velocity);
+        else if(velocity.getY() < -ClientPlayer.max_velocity) {
+            velocity.setY(-ClientPlayer.max_velocity);
         }
     }
 
     private updatePosition(fracSecond: number): void {
         //update position
-        this.position.addX(this.velocity.getX() * fracSecond);
-        this.position.addY(this.velocity.getY() * fracSecond);
+        this.position.addX((this.velocity.getX() + this.lagCompensateVelocity.getX()) * fracSecond);
+        this.position.addY((this.velocity.getY() + this.lagCompensateVelocity.getY()) * fracSecond);
+
+        if(this.lagCompensateFrames > 0) {
+            this.lagCompensateFrames--;
+            if(this.lagCompensateFrames == 0) {
+                this.lagCompensateVelocity.setX(0);
+                this.lagCompensateVelocity.setY(0);
+            }
+        }
     }
 
     private handleBorderCollision(): void {
