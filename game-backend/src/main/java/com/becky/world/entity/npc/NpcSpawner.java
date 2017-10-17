@@ -27,15 +27,11 @@ public class NpcSpawner {
 
         //Get a list of SpawnRules instances which are eligible.
         //They are eligible if enough time has passed and NPC population for those rules are under the limit.
-        final List<SpawnRules> eligibleRules = this.npcSpawners.stream()
-            .filter(spawnRule -> spawnRule.getNextIntervalTime() <= time)
-            .filter(spawnRule -> spawnRule.getCurrentPopulation() < spawnRule.getMaxPopulation())
-            .collect(Collectors.toList());
-
-        //for each eligible rule, execute the spawn function and reset the time interval for that rule.
-        for(final SpawnRules rule: eligibleRules) {
-            rule.spawn(gameWorld);
-            rule.resetNextIntervalTime();
+        for(final SpawnRules rule: npcSpawners) {
+            if(rule.getNextIntervalTime() < time && rule.getCurrentPopulation() < rule.getMaxPopulation()) {
+                rule.spawn(gameWorld);
+                rule.resetNextIntervalTime();
+            }
         }
     }
 

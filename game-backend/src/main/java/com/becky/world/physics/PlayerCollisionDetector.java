@@ -1,26 +1,25 @@
 package com.becky.world.physics;
 
+import com.becky.util.MathUtils;
 import com.becky.world.NewGameWorld;
+import com.becky.world.WorldEventListener;
 import com.becky.world.entity.GameEntity;
 import com.becky.world.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlayerCollisionDetector implements PhysicsFilter {
+public class PlayerCollisionDetector implements PhysicsFilter, WorldEventListener {
     private final NewGameWorld gameWorld;
     private final List<Player> worldPlayer = new ArrayList<>();
 
     public PlayerCollisionDetector(final NewGameWorld gameWorld) {
         this.gameWorld = gameWorld;
+        this.gameWorld.addWorldEventListener(this);
     }
 
     @Override
     public void apply(final GameEntity gameEntity) {
-        if(!gameEntity.doesPhysicsApply(PlayerCollisionDetector.class)) {
-            return;
-        }
-
         //Check if any bullets are colliding with the player and handle that
         //the main game loop will handle transmitting status changes
         if(gameEntity instanceof Player) {
@@ -35,8 +34,8 @@ public class PlayerCollisionDetector implements PhysicsFilter {
                     colliding = true;
 
                     //get angles
-                    final float angle = getAngleBetweenPlayers(player, player1);
-                    final float angle1 = getAngleBetweenPlayers(player1, player);
+                    final float angle = MathUtils.getAngleBetweenEntities(player, player1);
+                    final float angle1 = MathUtils.getAngleBetweenEntities(player1, player);
 
                     //set velocity of players
                     player.setXVelocity(player.getXVelocity() + 300.0f * (float)StrictMath.cos(angle));
@@ -61,29 +60,25 @@ public class PlayerCollisionDetector implements PhysicsFilter {
     }
 
     @Override
-    public void prepare() {
-        worldPlayer.clear();
-        final List<GameEntity> entities = gameWorld.getAllGameEntities();
-        for(final GameEntity entity: entities) {
-            if(entity instanceof Player) {
-                worldPlayer.add((Player)entity);
-            }
+    public void prepare() {}
+
+    @Override
+    public void onGameEntityAdded(final NewGameWorld world, final GameEntity entity) {
+        if(entity instanceof Player) {
+            worldPlayer.add((Player)entity);
+        }
+    }
+
+    @Override
+    public void onGameEntityRemoved(final NewGameWorld world, final GameEntity entity) {
+        if(entity instanceof Player) {
+            worldPlayer.remove(entity);
         }
     }
 
     private boolean isPlayerColliding(final Player player, final Player player2) {
-        final float delta = distance(player.getXPosition(), player.getYPosition(), player2.getXPosition(), player2.getYPosition());
+        final float delta = MathUtils.distance(player.getXPosition(), player.getYPosition(), player2.getXPosition(), player2.getYPosition());
         final float collisionDistance = player.getCollisionRadius() + player2.getCollisionRadius();
         return delta <= collisionDistance;
-    }
-
-    private float distance(final float x1, final float y1, final float x2, final float y2) {
-        return (float)StrictMath.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
-    }
-
-    private float getAngleBetweenPlayers(final Player player, final Player otherPlayer) {
-        final float deltaX = player.getXPosition() - otherPlayer.getXPosition();
-        final float deltaY = player.getYPosition() - otherPlayer.getYPosition();
-        return (float)StrictMath.atan2(deltaY, deltaX);
     }
 }

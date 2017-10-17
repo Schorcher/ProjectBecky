@@ -7,7 +7,7 @@ import java.util.List;
 
 public class NpcInfo implements NetworkedMessage {
     private String type; //the classname of the npc type. Doesn't need to be set if state != NPC_STATE_NEW
-    private int npcId;
+    private long npcId;
     private float positionX;
     private float positionY;
     private float angle;
@@ -18,7 +18,7 @@ public class NpcInfo implements NetworkedMessage {
         this.type = type;
     }
 
-    public void setNpcId(final int npcId) {
+    public void setNpcId(final long npcId) {
         this.npcId = npcId;
     }
 
@@ -46,7 +46,7 @@ public class NpcInfo implements NetworkedMessage {
         return this.type;
     }
 
-    public int getNpcId() {
+    public long getNpcId() {
         return this.npcId;
     }
 

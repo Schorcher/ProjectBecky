@@ -2,19 +2,26 @@ package com.becky.world.entity.npc;
 
 import com.becky.world.NewGameWorld;
 import com.becky.world.entity.GameEntity;
+import com.becky.world.entity.Player;
+import com.becky.world.physics.BulletCollisionDetector;
+import com.becky.world.physics.NpcCollisionDetector;
 import com.becky.world.physics.WorldBorderCollisionDetector;
 
 public abstract class Npc extends GameEntity {
     public static final int NPC_STATE_NEW = 111;
-    public static final int NPC_STATE_UPDATE = 12;
-    public static final int NPC_STATE_DEAD = 13;
+    public static final int NPC_STATE_UPDATE = 112;
+    public static final int NPC_STATE_DEAD = 113;
 
-    private int npcState;
-    private int npcHealth;
+    private int npcState = NPC_STATE_NEW;
+    protected int npcHealth;
+    protected float maxVelocity;
+    protected int pointsValue = 0;
 
     protected Npc(final NewGameWorld gameWorld) {
         super(gameWorld);
         super.addPhysicsFilter(WorldBorderCollisionDetector.class);
+        super.addPhysicsFilter(NpcCollisionDetector.class);
+        super.addPhysicsFilter(BulletCollisionDetector.class);
     }
 
     public int getNpcState() {
@@ -42,23 +49,37 @@ public abstract class Npc extends GameEntity {
         }
     }
 
+    public void setNpcPointsValue(final int value) {
+        this.pointsValue = value;
+    }
+
+    public int getNpcPointsValue() {
+        return this.pointsValue;
+    }
+
     @Override
     public void tick(final long elapsedTime) {
         final float multiplier = elapsedTime / 1000.0f;
-        this.velocity.x += this.acceleration.x * multiplier;
-        this.velocity.y += this.acceleration.y * multiplier;
-        this.position.x += this.velocity.x * multiplier;
-        this.position.y += this.velocity.y * multiplier;
+        super.velocity.x += super.acceleration.x * multiplier;
+        super.velocity.y += super.acceleration.y * multiplier;
+        this.capVelocity();
+        super.position.x += super.velocity.x * multiplier;
+        super.position.y += super.velocity.y * multiplier;
     }
 
-    /**
-     * This abstract method allows multiple NPCs to exist using the default NPCPlayerCollisionDetector.
-     * The default collision detector will call this method.
-     *
-     * If you create a new NPC you may implement this method as a blank method and write your own
-     * NPC Physics filter class to handle special collision logic. Or you can just let the default
-     * npc physics filter handle this part and perform any collision logic here.
-     * @param entity
-     */
-    public abstract void onCollisionWith(final GameEntity entity);
+    private void capVelocity() {
+        if(super.velocity.x > maxVelocity) {
+            super.velocity.x = maxVelocity;
+        }
+        else if(super.velocity.x < -maxVelocity) {
+            super.velocity.x = -maxVelocity;
+        }
+
+        if(super.velocity.y > maxVelocity) {
+            super.velocity.y = maxVelocity;
+        }
+        else if(super.velocity.y < -maxVelocity) {
+            super.velocity.y = -maxVelocity;
+        }
+    }
 }

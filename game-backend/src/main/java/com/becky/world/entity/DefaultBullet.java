@@ -2,7 +2,7 @@ package com.becky.world.entity;
 
 public class DefaultBullet extends Bullet {
     private static final float TRAVEL_DISTANCE = 2000.0f;
-    private static final int DAMAGE_FACTOR = 1;
+    private static final int DAMAGE_FACTOR = 5;
 
     private float remainingHealth = TRAVEL_DISTANCE;
 

@@ -86,7 +86,7 @@ public abstract class SpawnRules implements WorldEventListener {
         //if spawnInterval == -1 (NO_INTERVAL) then it will subtract 1 from this.nextIntervalTime
         //This is nothing to worry about because it would take centuries for this to cause an overflow for the
         //long int data type.
-        this.nextIntervalTime += this.spawnInterval;
+        this.nextIntervalTime = System.currentTimeMillis() + this.spawnInterval;
     }
 
     @Override

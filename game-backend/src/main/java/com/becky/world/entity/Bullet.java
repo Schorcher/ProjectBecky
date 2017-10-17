@@ -15,7 +15,6 @@ public abstract class Bullet extends GameEntity {
     protected final Player owner;
     protected final int damageAmount;
     protected int state = Bullet.STATE_NEW_BULLET;
-    protected int collisionRadius = 24;
 
     protected Bullet(final Player owner,
                      final float xPosition,
@@ -31,6 +30,7 @@ public abstract class Bullet extends GameEntity {
         velocity.x = xVelocity;
         velocity.y = yVelocity;
         this.damageAmount = damageAmount;
+        super.collisionRadius = 24;
     }
 
     /**

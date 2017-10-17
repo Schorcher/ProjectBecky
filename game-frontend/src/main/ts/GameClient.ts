@@ -26,6 +26,7 @@ class GameClient implements GameEntity {
     private player: ClientPlayer;
     private opponents: Set<OpponentPlayer> = new Set<OpponentPlayer>();
     private bullets: Set<Bullet> = new Set<Bullet>();
+    private npcs: Set<Npc> = new Set<Npc>();
     private renderer: SimpleRenderer;
     private playing: boolean = true;
     private username: string;
@@ -143,6 +144,11 @@ class GameClient implements GameEntity {
         //update bullets
         for(let i: number = 0; i < this.bullets.length; i++) {
             this.bullets.get(i).update(elapsedTime);
+        }
+
+        //update npcs
+        for(let i: number = 0; i < this.npcs.length; i++) {
+            this.npcs.get(i).update(elapsedTime);
         }
     }
 
@@ -278,6 +284,38 @@ class GameClient implements GameEntity {
                 }
             }
         }
+        else if((object = NpcInfo.getValidArrayFromJson(message)) !== null) {
+            let npcInfos: NpcInfo[] = object as NpcInfo[];
+            let length: number = npcInfos.length;
+
+            for(let i = 0; i < length; i++) {
+                let npcInfo: NpcInfo = npcInfos[i];
+                if(npcInfo.state === Npc.STATE_NEW_NPC) {
+                    if(npcInfo.type == "InfectedNpc") {
+                        let npc: InfectedNpc = new InfectedNpc(this, npcInfo.npcId);
+                        npc.setPosition(npcInfo.positionX, npcInfo.positionY);
+                        npc.setHealth(npcInfo.health);
+                        this.npcs.add(npc);
+                        this.renderer.addRenderable(npc);
+                    }
+                }
+                else if(npcInfo.state === Npc.STATE_UPDATE_NPC) {
+                    let npc: Npc = this.getNpcById(npcInfo.npcId);
+                    console.log(npcInfo);
+                    if(npc !== null) {
+                        npc.setPosition(npcInfo.positionX, npcInfo.positionY);
+                        npc.setHealth(npcInfo.health);
+                    }
+                }
+                else if(npcInfo.state === Npc.STATE_DEAD_NPC) {
+                    let npc: Npc = this.getNpcById(npcInfo.npcId);
+                    if(npc !== null) {
+                        this.renderer.removeRenderable(npc);
+                        this.npcs.remove(npc);
+                    }
+                }
+            }
+        }
         else if((object = PlayerListChange.getValidObjectFromJson(message)) !== null) {
             //It should be noted that the server only sends this message when a client disconnects from the server
             //or when the server force closes a connection
@@ -392,6 +430,16 @@ class GameClient implements GameEntity {
         let deltaY: number = event.clientY - this.canvas.height/2;
         let angle: number = Math.atan2(deltaY, deltaX);
         this.player.setAngle(angle);
+    }
+
+    private getNpcById = (npcId: number): Npc => {
+        let length: number = this.npcs.length;
+        for(let i = 0; i < length; i++) {
+            if(this.npcs.get(i).getNpcId() === npcId) {
+                return this.npcs.get(i);
+            }
+        }
+        return null;
     }
 
     private getPlayerByUsername = (username: string): Player => {

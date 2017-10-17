@@ -14,7 +14,7 @@ class NpcInfo {
         //"NpcInfo[]:" is 10 characters long
         let beginning: string = json.substr(0, Math.min(length, 10));
         if(beginning === "NpcInfo[]:") {
-            let jsonStr: string = json.substring(13, length);
+            let jsonStr: string = json.substring(10, length);
             return JSON.parse(jsonStr) as NpcInfo[];
         }
         else {

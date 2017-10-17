@@ -22,8 +22,7 @@ public class Player extends GameEntity {
     private boolean usernameFinal = false;
 
     //player descriptors
-    private int collisionRadius = 32;
-    private int health = 10;
+    private int health = 100;
     private int score = 0;
 
     //player state information
@@ -43,6 +42,7 @@ public class Player extends GameEntity {
         this.playerUsername = playerUsername;
         this.connection = connection;
         this.authenticationString = authenticationString;
+        this.collisionRadius = 32;
     }
 
     public String getAuthenticationString() {
@@ -69,10 +69,6 @@ public class Player extends GameEntity {
         this.health = Math.max(health, 0);
         this.healthAffectedBy = attackerUsername == null ? "" : attackerUsername;
         this.playerHealthUpdated = true;
-    }
-
-    public int getCollisionRadius() {
-        return this.collisionRadius;
     }
 
     public void setCollisionRadius(final int radius) {

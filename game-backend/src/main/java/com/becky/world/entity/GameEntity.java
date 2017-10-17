@@ -21,6 +21,9 @@ public abstract class GameEntity {
     protected Point2D.Float acceleration = new Point2D.Float();
     protected float angles = 0.0f;
 
+    //collisions
+    protected int collisionRadius;
+
     //used for physics filters
     private final List<Class<? extends PhysicsFilter>> filterApplies = new ArrayList<>();
 
@@ -28,6 +31,10 @@ public abstract class GameEntity {
         entityId = entityCount;
         entityCount++;
         this.container = container;
+    }
+
+    public int getCollisionRadius() {
+        return this.collisionRadius;
     }
 
     public long getEntityId() {

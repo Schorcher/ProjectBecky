@@ -1,13 +1,19 @@
 package com.becky.world;
 
-
 import com.becky.networking.PlayerMessageTransmitter;
-import com.becky.networking.message.*;
+import com.becky.networking.message.BulletInfo;
+import com.becky.networking.message.NpcInfo;
+import com.becky.networking.message.PlayerHealthMessage;
+import com.becky.networking.message.PointsUpdate;
+import com.becky.networking.message.ServerPlayerUpdate;
 import com.becky.world.entity.Bullet;
 import com.becky.world.entity.GameEntity;
 import com.becky.world.entity.Player;
+import com.becky.world.entity.npc.InfectedNpc;
+import com.becky.world.entity.npc.Npc;
 import com.becky.world.entity.npc.NpcSpawner;
 import com.becky.world.physics.BulletCollisionDetector;
+import com.becky.world.physics.NpcCollisionDetector;
 import com.becky.world.physics.PhysicsFilter;
 import com.becky.world.physics.PlayerCollisionDetector;
 import com.becky.world.physics.WorldBorderCollisionDetector;
@@ -34,6 +40,8 @@ public class NewGameWorld implements Runnable {
         physicsFilters.add(new BulletCollisionDetector(this));
         physicsFilters.add(new WorldBorderCollisionDetector(8000.0f, 8000.0f));
         physicsFilters.add(new PlayerCollisionDetector(this));
+        physicsFilters.add(new NpcCollisionDetector(this));
+        initNpcTypes();
     }
 
     public void start() {
@@ -86,7 +94,9 @@ public class NewGameWorld implements Runnable {
         for(final PhysicsFilter filter: physicsFilters) {
             filter.prepare();
             for(final GameEntity entity: entities) {
-                filter.apply(entity);
+                if(entity.doesPhysicsApply(filter.getClass())) {
+                    filter.apply(entity);
+                }
             }
         }
     }
@@ -94,6 +104,7 @@ public class NewGameWorld implements Runnable {
     private void transmit(final List<GameEntity> entities) {
         final List<ServerPlayerUpdate> playerUpdates = new ArrayList<>();
         final List<BulletInfo> bulletUpdates = new ArrayList<>();
+        final List<NpcInfo> npcInfos = new ArrayList<>();
 
         for(final GameEntity entity: entities) {
             if(entity instanceof Player) {
@@ -155,15 +166,38 @@ public class NewGameWorld implements Runnable {
                     bulletUpdates.add(info);
                 }
             }
+            else if(entity instanceof Npc) {
+                final Npc npc = (Npc)entity;
+                final NpcInfo npcInfo = new NpcInfo();
+                npcInfo.setState(npc.getNpcState());
+                npcInfo.setHealth(npc.getNpcHealth());
+                npcInfo.setNpcId(npc.getEntityId());
+                npcInfo.setAngle(npc.getAngles());
+                npcInfo.setPositionX(npc.getXPosition());
+                npcInfo.setPositionY(npc.getYPosition());
+                npcInfo.setType(npc.getClass().getSimpleName());
+                npcInfos.add(npcInfo);
+
+                if(npcInfo.getState() == Npc.NPC_STATE_DEAD) {
+                    this.removeGameEntity(npc);
+                }
+            }
         }
 
         final String playerUpdatesMessage = ServerPlayerUpdate.jsonSerializeAll(playerUpdates);
         final String bulletUpdatesMessage = BulletInfo.jsonSerialize(bulletUpdates);
+        final String npcUpdatesMessage = NpcInfo.jsonSerializeAll(npcInfos);
         final Collection<Player> allPlayers = getAllPlayers();
         for(final Player player: allPlayers) {
             messageTransmitter.transmitMessage(player, playerUpdatesMessage);
             messageTransmitter.transmitMessage(player, bulletUpdatesMessage);
+            messageTransmitter.transmitMessage(player, npcUpdatesMessage);
         }
+    }
+
+    private void initNpcTypes() {
+        final InfectedNpc.InfectedNpcSpawnRules infectedNpcRules = new InfectedNpc.InfectedNpcSpawnRules();
+        spawner.addNpcSpawnRules(infectedNpcRules);
     }
 
     public void addPlayer(final Player player) {
@@ -204,7 +238,7 @@ public class NewGameWorld implements Runnable {
         }
     }
 
-    public Collection<Player> getAllPlayers() {
+    public List<Player> getAllPlayers() {
         synchronized (this.players) {
             return new ArrayList<>(players.values());
         }

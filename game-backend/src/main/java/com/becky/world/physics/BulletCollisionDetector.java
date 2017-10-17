@@ -1,15 +1,13 @@
 package com.becky.world.physics;
 
-import com.becky.networking.message.PlayerHealthMessage;
 import com.becky.world.NewGameWorld;
 import com.becky.world.entity.Bullet;
 import com.becky.world.entity.GameEntity;
 import com.becky.world.entity.Player;
+import com.becky.world.entity.npc.Npc;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Determines if bullets are colliding with players
@@ -29,8 +27,7 @@ public class BulletCollisionDetector implements PhysicsFilter {
             return;
         }
 
-        //Check if any bullets are colliding with the player and handle that
-        //the main game loop will handle transmitting status changes
+        //If the game entity is a player, check if player collided with a bullet
         if(gameEntity instanceof Player) {
             final Player player = (Player)gameEntity;
             for(int i = 0; i < worldBullets.size(); i++) {
@@ -43,6 +40,21 @@ public class BulletCollisionDetector implements PhysicsFilter {
                 }
             }
         }
+        //If the game entity is a Npc, check if Npc collided with a bullet
+        else if(gameEntity instanceof Npc) {
+            final Npc npc = (Npc)gameEntity;
+            for(int i = 0; i < worldBullets.size(); i++) {
+                final Bullet bullet = worldBullets.get(i);
+                if(isBulletColliding(npc, bullet)) {
+                    npc.setNpcHealth(npc.getNpcHealth() - bullet.getDamage());
+                    bullet.setState(Bullet.STATE_DEAD_BULLET);
+                    worldBullets.remove(bullet);
+                    i--;
+                    bullet.getOwner().addScore(npc.getNpcPointsValue());
+                }
+            }
+        }
+
     }
 
     @Override
@@ -53,12 +65,13 @@ public class BulletCollisionDetector implements PhysicsFilter {
             if(entity instanceof Bullet) {
                 worldBullets.add((Bullet)entity);
             }
+
         }
     }
 
-    private boolean isBulletColliding(final Player player, final Bullet bullet) {
-        final float delta = distance(player.getXPosition(), player.getYPosition(), bullet.getXPosition(), bullet.getYPosition());
-        final float collisionDistance = player.getCollisionRadius() + bullet.getCollisionRadius();
+    private boolean isBulletColliding(final GameEntity entity, final Bullet bullet) {
+        final float delta = distance(entity.getXPosition(), entity.getYPosition(), bullet.getXPosition(), bullet.getYPosition());
+        final float collisionDistance = entity.getCollisionRadius() + bullet.getCollisionRadius();
         return delta <= collisionDistance;
     }
 
