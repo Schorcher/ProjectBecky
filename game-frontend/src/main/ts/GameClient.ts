@@ -301,7 +301,6 @@ class GameClient implements GameEntity {
                 }
                 else if(npcInfo.state === Npc.STATE_UPDATE_NPC) {
                     let npc: Npc = this.getNpcById(npcInfo.npcId);
-                    console.log(npcInfo);
                     if(npc !== null) {
                         npc.setPosition(npcInfo.positionX, npcInfo.positionY);
                         npc.setHealth(npcInfo.health);
