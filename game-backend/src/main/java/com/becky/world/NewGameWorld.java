@@ -12,17 +12,18 @@ import com.becky.world.entity.Player;
 import com.becky.world.entity.npc.InfectedNpc;
 import com.becky.world.entity.npc.Npc;
 import com.becky.world.entity.npc.NpcSpawner;
+import com.becky.world.entity.npc.SpawnRules;
 import com.becky.world.physics.BulletCollisionDetector;
 import com.becky.world.physics.NpcCollisionDetector;
 import com.becky.world.physics.PhysicsFilter;
 import com.becky.world.physics.PlayerCollisionDetector;
 import com.becky.world.physics.WorldBorderCollisionDetector;
 import org.java_websocket.WebSocket;
+import org.reflections.Reflections;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 
 public class NewGameWorld implements Runnable {
     private static final int MAX_TPS = 20;
@@ -196,8 +197,22 @@ public class NewGameWorld implements Runnable {
     }
 
     private void initNpcTypes() {
-        final InfectedNpc.InfectedNpcSpawnRules infectedNpcRules = new InfectedNpc.InfectedNpcSpawnRules();
-        spawner.addNpcSpawnRules(infectedNpcRules);
+        final Reflections reflections = new Reflections(this.getClass().getPackage().getName());
+        final Set<Class<? extends SpawnRules>> npcSpawnRulesClasses = reflections.getSubTypesOf(SpawnRules.class);
+        for(final Class<? extends SpawnRules> npcSpawnRulesClass: npcSpawnRulesClasses) {
+            try {
+                final Constructor<? extends SpawnRules> constructor = npcSpawnRulesClass.getConstructor();
+                this.spawner.addNpcSpawnRules(constructor.newInstance());
+            } catch (final NoSuchMethodException e) {
+                System.out.println("The NPC spawn rules class \"" + npcSpawnRulesClass.getSimpleName()
+                    + "\" does not have a valid constructor. Did you make " +
+                    "sure to include a parameter-less constructor?");
+            } catch (final Exception ex) {
+                System.out.println("Failed to instantiate NPC spawn rules class \"" +
+                    npcSpawnRulesClass.getSimpleName() + "\" due to the following exception:");
+                ex.printStackTrace();
+            }
+        }
     }
 
     public void addPlayer(final Player player) {

@@ -55,8 +55,12 @@ public class InfectedNpc extends Npc {
         return closestPlayer;
     }
 
-
     public static class InfectedNpcSpawnRules extends SpawnRules {
+        /**
+         * The constructor of your spawn rules class may not have any parameters
+         * The class will be completely ignored if no constructor with zero parameters
+         * is found.
+         */
         public InfectedNpcSpawnRules() {
             super(InfectedNpc.class);
             super.setSpawnInterval(30000); //30 second spawn interval
