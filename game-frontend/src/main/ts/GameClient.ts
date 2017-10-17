@@ -306,6 +306,13 @@ class GameClient implements GameEntity {
                         npc.setPosition(npcInfo.positionX, npcInfo.positionY);
                         npc.setHealth(npcInfo.health);
                     }
+                    else if(npcInfo.type == "InfectedNpc") {
+                        npc = new InfectedNpc(this, npcInfo.npcId);
+                        npc.setPosition(npcInfo.positionX, npcInfo.positionY);
+                        npc.setHealth(npcInfo.health);
+                        this.npcs.add(npc);
+                        this.renderer.addRenderable(npc);
+                    }
                 }
                 else if(npcInfo.state === Npc.STATE_DEAD_NPC) {
                     let npc: Npc = this.getNpcById(npcInfo.npcId);
