@@ -291,13 +291,15 @@ class GameClient implements GameEntity {
             for(let i = 0; i < length; i++) {
                 let npcInfo: NpcInfo = npcInfos[i];
                 if(npcInfo.state === Npc.STATE_NEW_NPC) {
-                    if(npcInfo.type == "InfectedNpc") {
-                        let npc: InfectedNpc = new InfectedNpc(this, npcInfo.npcId);
-                        npc.setPosition(npcInfo.positionX, npcInfo.positionY);
-                        npc.setHealth(npcInfo.health);
-                        this.npcs.add(npc);
-                        this.renderer.addRenderable(npc);
-                    }
+                    let construct = window[npcInfo.type];
+                    let dummyFunction = function() {};
+                    dummyFunction.prototype = construct.prototype;
+                    let obj = new dummyFunction();
+                    construct.apply(obj, [this, npcInfo.npcId]);
+                    obj.constructor = construct;
+                    let npc: Npc = obj as Npc;
+                    this.npcs.add(npc);
+                    this.renderer.addRenderable(npc);
                 }
                 else if(npcInfo.state === Npc.STATE_UPDATE_NPC) {
                     let npc: Npc = this.getNpcById(npcInfo.npcId);
@@ -305,8 +307,14 @@ class GameClient implements GameEntity {
                         npc.setPosition(npcInfo.positionX, npcInfo.positionY);
                         npc.setHealth(npcInfo.health);
                     }
-                    else if(npcInfo.type == "InfectedNpc") {
-                        npc = new InfectedNpc(this, npcInfo.npcId);
+                    else {
+                        let construct = window[npcInfo.type];
+                        let dummyFunction = function() {};
+                        dummyFunction.prototype = construct.prototype;
+                        let obj = new dummyFunction();
+                        construct.apply(obj, [this, npcInfo.npcId]);
+                        obj.constructor = construct;
+                        let npc: Npc = obj as Npc;
                         npc.setPosition(npcInfo.positionX, npcInfo.positionY);
                         npc.setHealth(npcInfo.health);
                         this.npcs.add(npc);
