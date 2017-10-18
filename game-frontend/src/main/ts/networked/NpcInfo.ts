@@ -4,6 +4,10 @@ class NpcInfo {
     public npcId: number;
     public positionX: number;
     public positionY: number;
+    public velocityX: number;
+    public velocityY: number;
+    public accelerationX: number;
+    public accelerationY: number;
     public angle: number;
     public health: number;
     public state: number;

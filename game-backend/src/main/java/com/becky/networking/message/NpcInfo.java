@@ -10,6 +10,10 @@ public class NpcInfo implements NetworkedMessage {
     private long npcId;
     private float positionX;
     private float positionY;
+    private float velocityX;
+    private float velocityY;
+    private float accelerationX;
+    private float accelerationY;
     private float angle;
     private int health;
     private int state;
@@ -42,6 +46,22 @@ public class NpcInfo implements NetworkedMessage {
         this.state = state;
     }
 
+    public void setVelocityX(final float velocityX) {
+        this.velocityX = velocityX;
+    }
+
+    public void setVelocityY(final float velocityY) {
+        this.velocityY = velocityY;
+    }
+
+    public void setAccelerationX(final float accelerationX) {
+        this.accelerationX = accelerationX;
+    }
+
+    public void setAccelerationY(final float accelerationY) {
+        this.accelerationY = accelerationY;
+    }
+
     public String getType() {
         return this.type;
     }
@@ -56,6 +76,22 @@ public class NpcInfo implements NetworkedMessage {
 
     public float getPositionY() {
         return this.positionY;
+    }
+
+    public float getVelocityX() {
+        return this.velocityX;
+    }
+
+    public float getVelocityY() {
+        return this.velocityY;
+    }
+
+    public float getAccelerationX() {
+        return this.accelerationX;
+    }
+
+    public float getAccelerationY() {
+        return this.accelerationY;
     }
 
     public float getAngle() {

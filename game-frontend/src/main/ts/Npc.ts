@@ -3,11 +3,16 @@ abstract class Npc implements GameEntity, Updateable, Renderable {
     static STATE_UPDATE_NPC: number = 112;
     static STATE_DEAD_NPC: number = 113;
 
-    protected position: Point;
+    protected position: Point = new Point(0, 0);
+    protected velocity: Point = new Point(0, 0);
+    protected acceleration: Point = new Point(0, 0);
     protected angle: number;
     protected health: number;
     protected npcId: number;
     protected parent: GameEntity;
+    protected compensationVelocity: Point = new Point(0, 0);
+    protected compensationFrames: number = 0;
+    protected max_velocity: number = 0;
 
     constructor(parent: GameEntity, npcId: number) {
         this.parent = parent;
@@ -31,6 +36,22 @@ abstract class Npc implements GameEntity, Updateable, Renderable {
         return this.position.getY();
     }
 
+    public getXVelocity(): number {
+        return this.velocity.getX();
+    }
+
+    public getYVelocity(): number {
+        return this.velocity.getY();
+    }
+
+    public getXAcceleration(): number {
+        return this.acceleration.getX();
+    }
+
+    public getYAcceleration(): number {
+        return this.acceleration.getY();
+    }
+
     public getHealth(): number {
         return this.health;
     }
@@ -47,6 +68,19 @@ abstract class Npc implements GameEntity, Updateable, Renderable {
         this.position = new Point(x, y);
     }
 
+    public setVelocity(x: number, y: number): void {
+        this.velocity = new Point(x, y);
+    }
+
+    public setCompensationVelocity(velocity: Point, numFrames: number): void {
+        this.compensationVelocity = velocity;
+        this.compensationFrames = numFrames;
+    }
+
+    public setAcceleration(x: number, y: number): void {
+        this.acceleration = new Point(x, y);
+    }
+
     public setAngle(angle: number) {
         this.angle = angle;
     }
@@ -55,7 +89,40 @@ abstract class Npc implements GameEntity, Updateable, Renderable {
         return this.angle;
     }
 
-    abstract update(ellapsedTime: number): void;
+    public update(elapsedTime: number): void {
+        let multiplier: number = elapsedTime / 1000.0;
+
+        this.velocity.addX(this.acceleration.getX() * multiplier);
+        this.velocity.addY(this.acceleration.getY() * multiplier);
+        this.capVelocity();
+
+        this.position.addX((this.velocity.getX() + this.compensationVelocity.getX()) * multiplier);
+        this.position.addY((this.velocity.getY() + this.compensationVelocity.getY()) * multiplier);
+
+        if(this.compensationFrames > 0) {
+            this.compensationFrames--;
+            if(this.compensationFrames == 0) {
+                this.compensationVelocity.setX(0);
+                this.compensationVelocity.setY(0);
+            }
+        }
+    }
 
     abstract draw(context: CanvasRenderingContext2D, screenOrigin: Point): void;
+
+    private capVelocity(): void {
+        if(this.velocity.getX() > this.max_velocity) {
+            this.velocity.setX(this.max_velocity);
+        }
+        else if(this.velocity.getX() < -this.max_velocity) {
+            this.velocity.setX(-this.max_velocity);
+        }
+
+        if(this.velocity.getY() > this.max_velocity) {
+            this.velocity.setY(this.max_velocity);
+        }
+        else if(this.velocity.getY() < -this.max_velocity) {
+            this.velocity.setY(-this.max_velocity);
+        }
+    }
 }

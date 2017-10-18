@@ -304,8 +304,7 @@ class GameClient implements GameEntity {
                 else if(npcInfo.state === Npc.STATE_UPDATE_NPC) {
                     let npc: Npc = this.getNpcById(npcInfo.npcId);
                     if(npc !== null) {
-                        npc.setPosition(npcInfo.positionX, npcInfo.positionY);
-                        npc.setHealth(npcInfo.health);
+                        this.lagCompensator.compensateNpc(npc, npcInfo);
                     }
                     else {
                         let construct = window[npcInfo.type];
@@ -315,8 +314,7 @@ class GameClient implements GameEntity {
                         construct.apply(obj, [this, npcInfo.npcId]);
                         obj.constructor = construct;
                         let npc: Npc = obj as Npc;
-                        npc.setPosition(npcInfo.positionX, npcInfo.positionY);
-                        npc.setHealth(npcInfo.health);
+                        this.lagCompensator.compensateNpc(npc, npcInfo);
                         this.npcs.add(npc);
                         this.renderer.addRenderable(npc);
                     }

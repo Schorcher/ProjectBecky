@@ -9,7 +9,6 @@ import com.becky.networking.message.ServerPlayerUpdate;
 import com.becky.world.entity.Bullet;
 import com.becky.world.entity.GameEntity;
 import com.becky.world.entity.Player;
-import com.becky.world.entity.npc.InfectedNpc;
 import com.becky.world.entity.npc.Npc;
 import com.becky.world.entity.npc.NpcSpawner;
 import com.becky.world.entity.npc.SpawnRules;
@@ -22,7 +21,6 @@ import org.java_websocket.WebSocket;
 import org.reflections.Reflections;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public class NewGameWorld implements Runnable {
@@ -176,6 +174,10 @@ public class NewGameWorld implements Runnable {
                 npcInfo.setAngle(npc.getAngles());
                 npcInfo.setPositionX(npc.getXPosition());
                 npcInfo.setPositionY(npc.getYPosition());
+                npcInfo.setVelocityX(npc.getXVelocity());
+                npcInfo.setVelocityY(npc.getYVelocity());
+                npcInfo.setAccelerationX(npc.getXAcceleration());
+                npcInfo.setAccelerationY(npc.getYAcceleration());
                 npcInfo.setType(npc.getClass().getSimpleName());
                 npcInfos.add(npcInfo);
 

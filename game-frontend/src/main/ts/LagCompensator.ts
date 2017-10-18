@@ -84,7 +84,7 @@ class LagCompensator {
         player.setVelocity(velocity.getX(), velocity.getY());
 
         //how "off" is the client on player position?
-        let delta: number = this.distance(player.getXPosition(), player.getYPosition(), position.getX(), player.getYPosition());
+        let delta: number = this.distance(player.getXPosition(), player.getYPosition(), position.getX(), position.getY());
 
         if(delta > LagCompensator.THRESHOLD_MAX_ADJUST) {
             player.setPosition(position.getX(), position.getY());
@@ -101,6 +101,47 @@ class LagCompensator {
             //delta per millisecond * 1000 = distance per second to add to velocity
             let adjustVelocity: Point = new Point(deltaX/millis * 1000, deltaY/millis * 1000);
             player.setLagCompensateVelocity(adjustVelocity, this.correctionFps);
+        }
+    }
+
+    public compensateNpc(npc: Npc, npcInfo: NpcInfo): void {
+        npc.setHealth(npcInfo.health);
+        if(!LagCompensator.enabled) {
+            npc.setPosition(npcInfo.positionX, npcInfo.positionY);
+            npc.setAngle(npcInfo.angle);
+            return;
+        }
+
+        //multiplier based on latency
+        let multiplier: number = this.latency / 1000.0;
+
+        //adjust the velocity and position to account for latency
+        let velocity: Point = new Point(npcInfo.velocityX, npcInfo.velocityY);
+        velocity.addX(multiplier * npcInfo.accelerationX);
+        velocity.addY(multiplier * npcInfo.accelerationY);
+        let position: Point = new Point(npcInfo.positionX, npcInfo.positionY);
+        position.addX(multiplier * velocity.getX());
+        position.addY(multiplier * velocity.getY());
+
+        //how "off" is the client
+        let delta: number = this.distance(npc.getXPosition(), npc.getYPosition(), position.getX(), position.getY());
+
+        //no matter what, we always set acceleration and velocity
+        npc.setAcceleration(npcInfo.accelerationX, npcInfo.accelerationY);
+        npc.setVelocity(npcInfo.velocityX, npcInfo.velocityY);
+
+        //figure out how to handle a difference in values
+        if(delta > LagCompensator.THRESHOLD_MAX_ADJUST) {
+            npc.setPosition(position.getX(), position.getY());
+        }
+        else {
+            let millis: number = GameClient.TIME_PER_FRAME * this.correctionFps;
+
+            let deltaX: number = position.getX() - npc.getXPosition();
+            let deltaY: number = position.getY() - npc.getYPosition();
+
+            let adjustVelocity: Point = new Point(deltaX/millis * 1000, deltaY/millis * 1000);
+            npc.setCompensationVelocity(adjustVelocity, this.correctionFps);
         }
     }
 

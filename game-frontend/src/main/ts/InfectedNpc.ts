@@ -13,6 +13,7 @@ class InfectedNpc extends Npc {
     constructor(parent: GameEntity, npcId: number) {
         super(parent, npcId);
         this.angle = 0;
+        this.max_velocity = ClientPlayer.max_velocity / 3.0;
     }
 
     public setAngle(angle: number): void {/* Do nothing */}
@@ -37,6 +38,11 @@ class InfectedNpc extends Npc {
                 this.widthExpand = true;
                 this.extraWidth = -InfectedNpc.maxBulge;
             }
+        }
+
+        //call the super update method if lag compensation is enabled
+        if(LagCompensator.enabled) {
+            super.update(elapsedTime);
         }
     }
 
