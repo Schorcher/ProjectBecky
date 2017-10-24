@@ -2,12 +2,14 @@ package com.becky.world.entity.npc;
 
 import com.becky.util.MathUtils;
 import com.becky.world.NewGameWorld;
+import com.becky.world.WorldEventListener;
+import com.becky.world.entity.GameEntity;
 import com.becky.world.entity.Player;
 
 import java.util.Collection;
 import java.util.List;
 
-public class InfectedNpc extends Npc {
+public class InfectedNpc extends Npc implements WorldEventListener {
     private static final float MAX_VIEW_DISTANCE = 2048.0f;
     private static final float ACCELERATION = Player.ACCELERATION;
 
@@ -17,9 +19,10 @@ public class InfectedNpc extends Npc {
         super(world);
         this.trackedPlayer = trackedPlayer;
         super.maxVelocity = Player.MAX_VELOCITY / 3.0f;
-        super.collisionRadius = 12;
+        super.collisionRadius = 16;
         super.npcHealth = 15;
         super.pointsValue = 25;
+        world.addWorldEventListener(this);
     }
 
     @Override
@@ -27,7 +30,8 @@ public class InfectedNpc extends Npc {
         if(trackedPlayer == null) {
             trackedPlayer = findClosestPlayer();
         }
-        else {
+
+        if(trackedPlayer != null) {
             final float deltaX = this.trackedPlayer.getXPosition() - super.position.x;
             final float deltaY = this.trackedPlayer.getYPosition() - super.position.y;
             final float angle = (float)StrictMath.atan2(deltaY, deltaX);
@@ -35,8 +39,30 @@ public class InfectedNpc extends Npc {
             super.acceleration.x = ACCELERATION * (float)StrictMath.cos(angle);
             super.acceleration.y = ACCELERATION * (float)StrictMath.sin(angle);
         }
+        else {
+            super.acceleration.x = 0.0f;
+            super.acceleration.y = 0.0f;
+        }
 
         super.tick(elapsedTime);
+    }
+
+    @Override
+    public void onGameEntityRemoved(final NewGameWorld gameWorld, final GameEntity entity) {
+        if(this.trackedPlayer != null && trackedPlayer.equals(entity)) {
+            this.trackedPlayer = null;
+        }
+    }
+
+    @Override
+    public void onGameEntityAdded(final NewGameWorld gameWorld, final GameEntity entity) {}
+
+    @Override
+    public void setNpcHealth(final int health) {
+        if(health <= 0) {
+            super.getGameWorld().removeWorldEventListener(this);
+        }
+        super.setNpcHealth(health);
     }
 
     private Player findClosestPlayer() {

@@ -62,6 +62,14 @@ public abstract class Npc extends GameEntity {
         final float multiplier = elapsedTime / 1000.0f;
         super.velocity.x += super.acceleration.x * multiplier;
         super.velocity.y += super.acceleration.y * multiplier;
+
+        if(Math.abs(super.acceleration.x) < 0.1f) {
+            super.velocity.x -= super.velocity.x * multiplier;
+        }
+        if(Math.abs(super.acceleration.y) < 0.1f) {
+            super.velocity.y -= super.velocity.y * multiplier;
+        }
+
         this.capVelocity();
         super.position.x += super.velocity.x * multiplier;
         super.position.y += super.velocity.y * multiplier;
