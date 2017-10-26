@@ -60,7 +60,7 @@ public class InfectedNpc extends Npc implements WorldEventListener {
     @Override
     public void setNpcHealth(final int health) {
         if(health <= 0) {
-            super.getGameWorld().removeWorldEventListener(this);
+            this.onHealthZero();
         }
         super.setNpcHealth(health);
     }
@@ -79,6 +79,25 @@ public class InfectedNpc extends Npc implements WorldEventListener {
             }
         }
         return closestPlayer;
+    }
+
+    private void onHealthZero() {
+        //remove self from world listeners
+        super.getGameWorld().removeWorldEventListener(this);
+
+        //spawn two VirusNpc instances
+        final NewGameWorld gameWorld = super.getGameWorld();
+        final VirusNpc virus1 = new VirusNpc(gameWorld);
+        final VirusNpc virus2 = new VirusNpc(gameWorld);
+        virus1.setXPosition(super.position.x);
+        virus1.setYPosition(super.position.y);
+        virus2.setXPosition(super.position.x);
+        virus2.setYPosition(super.position.y);
+        gameWorld.addGameEntity(virus1);
+        gameWorld.addGameEntity(virus2);
+
+        //the game world itself will recognize the new NPCs on the next call to transmit network messages
+        //since the default npc state is NEW. This way clients will be alerted to the new NPCs being spawned.
     }
 
     public static class InfectedNpcSpawnRules extends SpawnRules {

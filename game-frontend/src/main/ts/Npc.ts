@@ -1,3 +1,9 @@
+///<reference path="./GameEntity.ts"/>
+///<reference path="./Updateable.ts"/>
+///<reference path="./Renderable.ts"/>
+///<reference path="./collections/Point.ts"/>
+///<reference path="./collections/Set.ts"/>
+
 abstract class Npc implements GameEntity, Updateable, Renderable {
     static STATE_NEW_NPC: number = 111;
     static STATE_UPDATE_NPC: number = 112;
