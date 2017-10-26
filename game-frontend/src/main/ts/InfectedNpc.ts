@@ -1,4 +1,7 @@
-
+///<reference path="./Npc.ts"/>
+///<reference path="./GameEntity.ts"/>
+///<reference path="./ClientPlayer.ts"/>
+///<reference path="./LagCompensator.ts"/>
 
 class InfectedNpc extends Npc {
     static rpm: number = 4;

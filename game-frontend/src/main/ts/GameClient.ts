@@ -7,6 +7,9 @@
 ///<reference path="./networked/ServerPlayerUpdate.ts"/>
 ///<reference path="./networked/ClientInputStateUpdate.ts"/>
 ///<reference path="./networked/PlayerListChange.ts"/>
+///<reference path="./networked/InitialPlayerList.ts"/>
+///<reference path="./networked/PointsUpdate.ts"/>
+///<reference path="./networked/PlayerHealthMessage.ts"/>
 ///<reference path="./Bullet.ts"/>
 
 /**

@@ -2,6 +2,8 @@
 ///<reference path="./Updateable.ts"/>
 ///<reference path="./collections/Point.ts"/>
 ///<reference path="./GameEntity.ts"/>
+///<reference path="./Player.ts"/>
+///<reference path="./LagCompensator.ts"/>
 
 /**
  * The bullet class

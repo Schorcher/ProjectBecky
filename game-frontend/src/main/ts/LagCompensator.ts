@@ -1,3 +1,10 @@
+///<reference path="./networked/BulletInfo.ts"/>
+///<reference path="./networked/ServerPlayerUpdate.ts"/>
+///<reference path="./networked/NpcInfo.ts"/>
+///<reference path="./Npc.ts"/>
+///<reference path="./Bullet.ts"/>
+///<reference path="./ClientPlayer.ts"/>
+///<reference path="./GameClient.ts"/>
 
 class LagCompensator {
     static enabled: boolean = true;
