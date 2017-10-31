@@ -16,6 +16,13 @@ class VirusNpc extends Npc {
     }
 
     public draw(context: CanvasRenderingContext2D, screenOrigin: Point): void {
-
+        context.beginPath();
+        context.arc(this.position.getX() - screenOrigin.getX(), this.position.getY() - screenOrigin.getY(), 16, 0, 2*Math.PI, false);
+        context.fillStyle = "blue";
+        context.fill();
+        context.lineWidth = 5;
+        context.strokeStyle = "#000133";
+        context.stroke();
+        context.closePath();
     }
 }
