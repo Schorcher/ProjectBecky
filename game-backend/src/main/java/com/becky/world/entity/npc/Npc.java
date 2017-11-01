@@ -64,10 +64,20 @@ public abstract class Npc extends GameEntity {
         super.velocity.y += super.acceleration.y * multiplier;
 
         if(Math.abs(super.acceleration.x) < 0.1f) {
-            super.velocity.x -= super.velocity.x * multiplier;
+            if(super.velocity.x < 0.0f) {
+                super.velocity.x += super.velocity.x * multiplier;
+            }
+            else {
+                super.velocity.x -= super.velocity.x * multiplier;
+            }
         }
         if(Math.abs(super.acceleration.y) < 0.1f) {
-            super.velocity.y -= super.velocity.y * multiplier;
+            if(super.velocity.y < 0.0f) {
+                super.velocity.y += super.velocity.y * multiplier;
+            }
+            else {
+                super.velocity.y -= super.velocity.y * multiplier;
+            }
         }
 
         this.capVelocity();

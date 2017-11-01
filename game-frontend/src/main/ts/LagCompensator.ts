@@ -147,7 +147,7 @@ class LagCompensator {
             let deltaX: number = position.getX() - npc.getXPosition();
             let deltaY: number = position.getY() - npc.getYPosition();
 
-            let adjustVelocity: Point = new Point(deltaX/millis * 1000, deltaY/millis * 1000);
+            let adjustVelocity: Point = new Point((deltaX/millis) * 1000, (deltaY/millis) * 1000);
             npc.setCompensationVelocity(adjustVelocity, this.correctionFps);
         }
     }

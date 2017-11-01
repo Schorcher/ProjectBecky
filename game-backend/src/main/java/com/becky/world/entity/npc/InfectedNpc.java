@@ -127,7 +127,7 @@ public class InfectedNpc extends Npc implements WorldEventListener {
                 players.remove(chosenPlayer);
 
                 //spawn 10 InfectedNpc entities around
-                for(int j = 0; j < 10; j++) {
+                for(int j = 0; j < 1; j++) {
                     final float angle = j * (float)Math.PI/5.0f;
                     final float x = 512 * (float)StrictMath.cos(angle) + chosenPlayer.getXPosition();
                     final float y = 512 * (float)StrictMath.sin(angle) + chosenPlayer.getYPosition();

@@ -294,6 +294,10 @@ class GameClient implements GameEntity {
             for(let i = 0; i < length; i++) {
                 let npcInfo: NpcInfo = npcInfos[i];
                 if(npcInfo.state === Npc.STATE_NEW_NPC) {
+                    let n: Npc = this.getNpcById(npcInfo.npcId);
+                    if(n !== null) {
+                        this.lagCompensator.compensateNpc(n, npcInfo);
+                    }
                     let construct = window[npcInfo.type];
                     let dummyFunction = function() {};
                     dummyFunction.prototype = construct.prototype;
@@ -329,6 +333,7 @@ class GameClient implements GameEntity {
                         this.npcs.remove(npc);
                     }
                 }
+                console.log(this.npcs.length);
             }
         }
         else if((object = PlayerListChange.getValidObjectFromJson(message)) !== null) {
