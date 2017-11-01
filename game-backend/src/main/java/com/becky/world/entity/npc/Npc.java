@@ -2,7 +2,6 @@ package com.becky.world.entity.npc;
 
 import com.becky.world.NewGameWorld;
 import com.becky.world.entity.GameEntity;
-import com.becky.world.entity.Player;
 import com.becky.world.physics.BulletCollisionDetector;
 import com.becky.world.physics.NpcCollisionDetector;
 import com.becky.world.physics.WorldBorderCollisionDetector;
@@ -66,17 +65,29 @@ public abstract class Npc extends GameEntity {
         if(Math.abs(super.acceleration.x) < 0.1f) {
             if(super.velocity.x < 0.0f) {
                 super.velocity.x += super.velocity.x * multiplier;
+                if(super.velocity.x > 0.0f) {
+                    super.velocity.x = 0.0f;
+                }
             }
             else {
                 super.velocity.x -= super.velocity.x * multiplier;
+                if(super.velocity.x < 0.0f) {
+                    super.velocity.x = 0.0f;
+                }
             }
         }
         if(Math.abs(super.acceleration.y) < 0.1f) {
             if(super.velocity.y < 0.0f) {
                 super.velocity.y += super.velocity.y * multiplier;
+                if(super.velocity.y > 0.0f) {
+                    super.velocity.y = 0.0f;
+                }
             }
             else {
                 super.velocity.y -= super.velocity.y * multiplier;
+                if(super.velocity.y < 0.0f) {
+                    super.velocity.y = 0.0f;
+                }
             }
         }
 
