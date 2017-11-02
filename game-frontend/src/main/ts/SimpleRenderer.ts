@@ -10,16 +10,12 @@ class SimpleRenderer implements Renderer {
     private clientPlayer: ClientPlayer;
     private gameBackground: GameBackground;
     private renderingContext: CanvasRenderingContext2D;
-    private offScreenRenderingContext: CanvasRenderingContext2D;
-    private offScreenCanvas = document.createElement('canvas');
     private screenOrigin: Point;
     private elements: Set<Renderable> = new Set<Renderable>();
 
     constructor(context: CanvasRenderingContext2D) {
         this.renderingContext = context;
-        this.offScreenRenderingContext = new CanvasRenderingContext2D;
         this.screenOrigin = new Point();
-
     }
 
     public addRenderable(element: Renderable): void {
@@ -51,19 +47,6 @@ class SimpleRenderer implements Renderer {
         this.screenOrigin = screenOrigin;
     }
 
-    public offScreenDraw(): void{
-        //render the background
-        this.gameBackground.draw(this.offScreenRenderingContext, this.screenOrigin);
-
-        //render opponents
-        for(let i = 0; i < this.elements.length; i++) {
-            this.elements.get(i).draw(this.offScreenRenderingContext, this.screenOrigin);
-        }
-
-        //render the client player
-        this.clientPlayer.draw(this.offScreenRenderingContext, this.screenOrigin);
-    }
-
     public draw(): void {
         //render the background
         this.gameBackground.draw(this.renderingContext, this.screenOrigin);
@@ -75,5 +58,6 @@ class SimpleRenderer implements Renderer {
 
         //render the client player
         this.clientPlayer.draw(this.renderingContext, this.screenOrigin);
+
     }
 }

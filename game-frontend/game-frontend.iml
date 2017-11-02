@@ -8,6 +8,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/site/html" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/site/js" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/site/css" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/site/png" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />

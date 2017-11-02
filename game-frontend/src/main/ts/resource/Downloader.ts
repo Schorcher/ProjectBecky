@@ -3,39 +3,32 @@
  * The Downloader class
  */
 class Downloader {
-    static resourceDirectory = '~/resource/images';
-    static resourcesLoaded = 0;
-    static resourcesTotal = 0;
+    static resourceDirectory = '/resource';
+    static resourcesLoaded: number = 0;
+    static resourcesTotal: number = 0;
     static allResources;
     static ship;
-    static bullet;
-    static infected;
+    static enemyShip;
 
 
     static getNumbOfResourcesLoaded(){
         this.resourcesLoaded++;
     }
 
-    static getResources(): void{
+    static getResources(): void {
         this.allResources = [];
 
         // Resources and resource data listed and stored here
         this.resourcesTotal++;
         this.ship = document.createElement("img");
-        this.ship.src = this.resourceDirectory + "/ship.png";
+        this.ship.src = this.resourceDirectory + "/shipOutline.png";
         this.ship.onload = Downloader.getNumbOfResourcesLoaded();
         this.allResources["ship"] = this.ship
 
         this.resourcesTotal++;
-        this.bullet = document.createElement("img");
-        this.bullet.src = this.resourceDirectory + "/bullet.png";
-        this.bullet.onload = Downloader.getNumbOfResourcesLoaded();
-        this.allResources["bullet"] = this.bullet;
-
-        this.resourcesTotal++;
-        this.infected = document.createElement("img");
-        this.infected.src = this.resourceDirectory + "/infected.png";
-        this.infected.onload = Downloader.getNumbOfResourcesLoaded();
-        this.allResources["infected"] = this.infected;
+        this.enemyShip = document.createElement("img");
+        this.enemyShip.src = this.resourceDirectory + "/enemyOutline.png";
+        this.enemyShip.onload = Downloader.getNumbOfResourcesLoaded();
+        this.allResources["enemyShip"] = this.enemyShip;
     }
 }

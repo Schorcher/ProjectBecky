@@ -2,8 +2,6 @@ package com.becky.world.entity.npc;
 
 import com.becky.world.NewGameWorld;
 
-import java.awt.geom.Point2D;
-
 /**
  * Npc class which is a type of npc that spawns from the death of an infected npc.
  * Created by Clayton Hunsinger on 10/26/2017.
