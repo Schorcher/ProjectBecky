@@ -1,7 +1,6 @@
 ///<reference path="./Renderable.ts"/>
 ///<reference path="./ClientPlayer.ts"/>
 ///<reference path="./collections/Set.ts"/>
-///<reference path="./OpponentPlayer.ts"/>
 ///<reference path="./Player.ts"/>
 
 /**
