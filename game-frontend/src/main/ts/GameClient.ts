@@ -11,6 +11,7 @@
 ///<reference path="./networked/PointsUpdate.ts"/>
 ///<reference path="./networked/PlayerHealthMessage.ts"/>
 ///<reference path="./Bullet.ts"/>
+///<reference path="./GameUI.ts"/>
 
 /**
  * This class is the base class to the game client itself.
@@ -24,6 +25,7 @@ class GameClient implements GameEntity {
     private worldWidth: number = 8000;
     private worldHeight: number = 8000;
 
+    private gameUI: GameUI;
     private canvas: HTMLCanvasElement;
     private connection: WebSocket;
     private player: ClientPlayer;
@@ -37,6 +39,7 @@ class GameClient implements GameEntity {
     private background: GameBackground;
     private numFrames: number = 0;
     private lagCompensator: LagCompensator = new LagCompensator(30);
+
 
     /**
      * Creates a new GameClient instance.
@@ -52,6 +55,7 @@ class GameClient implements GameEntity {
         this.username = username;
         this.authenticationString = authenticationString;
         this.background = new GameBackground(this.canvas.width, this.canvas.height, 2000, 2000);
+        this.gameUI = new GameUI(this.canvas.width, this.canvas.height);
         this.init();
     }
 
@@ -191,6 +195,9 @@ class GameClient implements GameEntity {
         this.background = new GameBackground(this.canvas.width, this.canvas.height, this.worldWidth, this.worldHeight);
         this.player = new ClientPlayer(this, 0, 0, 0, this.username);
         this.background.linkPlayer(this.player);
+
+        this.gameUI = new GameUI(this.canvas.width, this.canvas.height);
+        this.gameUI.linkPlayer(this.player);
     }
 
     private initInput(): void {
@@ -208,6 +215,7 @@ class GameClient implements GameEntity {
         //consequently, the background object needs to be the first thing added as it will then be rendered before anything else
         this.renderer.addRenderable(this.background);
         this.renderer.addRenderable(this.player);
+        this.renderer.addRenderable(this.gameUI);
     }
 
     private initSocketListeners(): void {

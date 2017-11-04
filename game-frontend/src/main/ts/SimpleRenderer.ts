@@ -2,6 +2,7 @@
 ///<reference path="./ClientPlayer.ts"/>
 ///<reference path="./GameBackground.ts"/>
 ///<reference path="./collections/Set.ts"/>
+///<reference path="./GameUI.ts"/>
 
 /**
  * A simple 2D renderer class.
@@ -12,6 +13,7 @@ class SimpleRenderer implements Renderer {
     private renderingContext: CanvasRenderingContext2D;
     private screenOrigin: Point;
     private elements: Set<Renderable> = new Set<Renderable>();
+    private gameUI: GameUI;
 
     constructor(context: CanvasRenderingContext2D) {
         this.renderingContext = context;
@@ -25,6 +27,9 @@ class SimpleRenderer implements Renderer {
         else if(element instanceof GameBackground) {
             this.gameBackground = element as GameBackground;
         }
+        else if (element instanceof GameUI) {
+            this.gameUI = element as GameUI;
+        }
         else {
             this.elements.add(element);
         }
@@ -37,6 +42,10 @@ class SimpleRenderer implements Renderer {
         }
         if(element instanceof GameBackground) {
             this.gameBackground = null;
+            return true;
+        }
+        if (element instanceof GameUI) {
+            this.gameUI = null;
             return true;
         }
 
@@ -58,6 +67,9 @@ class SimpleRenderer implements Renderer {
 
         //render the client player
         this.clientPlayer.draw(this.renderingContext, this.screenOrigin);
+
+        // Render the UI Components
+        this.gameUI.draw(this.renderingContext, this.screenOrigin);
 
     }
 }
