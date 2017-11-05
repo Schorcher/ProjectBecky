@@ -16,4 +16,13 @@ public class MathUtils {
         final float deltaY = first.getYPosition() - second.getYPosition();
         return (float)StrictMath.atan2(deltaY, deltaX);
     }
+
+    public static float normalizeAngle(final float angle) {
+        if(angle < 0) {
+            return angle + 2*(float)Math.PI;
+        }
+        else {
+            return angle - 2*(float)Math.PI;
+        }
+    }
 }

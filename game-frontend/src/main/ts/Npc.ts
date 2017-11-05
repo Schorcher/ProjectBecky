@@ -12,7 +12,7 @@ abstract class Npc implements GameEntity, Updateable, Renderable {
     protected position: Point = new Point(0, 0);
     protected velocity: Point = new Point(0, 0);
     protected acceleration: Point = new Point(0, 0);
-    protected angle: number;
+    protected angle: number = 0;
     protected health: number;
     protected npcId: number;
     protected parent: GameEntity;

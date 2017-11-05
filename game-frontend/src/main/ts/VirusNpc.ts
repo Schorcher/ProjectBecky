@@ -4,6 +4,7 @@
 ///<reference path="./LagCompensator.ts"/>
 
 class VirusNpc extends Npc {
+    private static firstLegIndex: number = 11;
     private static drawPoints: Point[] = [
         new Point(-12, -20),
         new Point(0, -6),
@@ -33,30 +34,28 @@ class VirusNpc extends Npc {
     }
 
     public draw(context: CanvasRenderingContext2D, screenOrigin: Point): void {
-        // context.beginPath();
-        // context.arc(this.position.getX() - screenOrigin.getX(), this.position.getY() - screenOrigin.getY(), 16, 0, 2*Math.PI, false);
-        // context.fillStyle = "blue";
-        // context.fill();
-        // context.lineWidth = 5;
-        // context.strokeStyle = "#000133";
-        // context.stroke();
-        // context.closePath();
-
         //translate the points to screen space
         this.setLegEndpoints();
-        //this.rotatePoints();
+        this.rotatePoints();
         this.translatePoints(screenOrigin);
+
+        //prepare background draw colors and style
+        context.strokeStyle = "#007875";
+        context.lineWidth = 3;
+        this.drawLines(context);
 
         //now prepare to draw the points
         context.strokeStyle = "#00fffc";
         context.lineWidth = 1;
+        this.drawLines(context);
+    }
 
-        //draw main body parts
+    private drawLines(context: CanvasRenderingContext2D): void {
         context.beginPath();
         context.moveTo(this.transformedPoints[0].getX(), this.transformedPoints[0].getY());
         for(let i = 1; i < 9; i++) {
             context.lineTo(this.transformedPoints[i].getX(),
-                           this.transformedPoints[i].getY());
+                this.transformedPoints[i].getY());
         }
         context.stroke();
         context.moveTo(this.transformedPoints[9].getX(), this.transformedPoints[9].getY());
@@ -76,7 +75,6 @@ class VirusNpc extends Npc {
         let speedSquared: number = Math.pow(this.getXVelocity(), 2) + Math.pow(this.getYVelocity(), 2);
         let changeX: number = Math.min(4.0, 0.000128 * speedSquared);
         let changeY: number = Math.min(1.0, 0.000032 * speedSquared);
-        console.log(super.getYVelocity());
 
         //note, still working with local points as in, points that have not
         //been transformed or rotated
@@ -87,19 +85,19 @@ class VirusNpc extends Npc {
     }
 
     private rotatePoints(): void {
-        let sinAngle: number = Math.sin(this.angle);
-        let cosAngle: number = Math.cos(this.angle);
+        let sinAngle: number = Math.sin(super.getAngle());
+        let cosAngle: number = Math.cos(super.getAngle());
 
-        //this is the first 11 points, which excludes the leg endpoints
-        for(let i = 0; i < 11; i++) {
+        //this is the first points, which excludes the leg endpoints
+        for(let i = 0; i < VirusNpc.firstLegIndex; i++) {
             let x: number = VirusNpc.drawPoints[i].getX();
             let y: number = VirusNpc.drawPoints[i].getY();
             this.transformedPoints[i].setX(x*cosAngle - y*sinAngle);
-            this.transformedPoints[i].setY(y*cosAngle + x*sinAngle);
+            this.transformedPoints[i].setY(x*sinAngle + y*cosAngle);
         }
 
         //leg endpoints aka the last two points in the array
-        for(let i = 11; i < 13; i++) {
+        for(let i = VirusNpc.firstLegIndex; i < this.transformedPoints.length; i++) {
             let x: number = this.transformedPoints[i].getX();
             let y: number = this.transformedPoints[i].getY();
             this.transformedPoints[i].setX(x*cosAngle - y*sinAngle);
@@ -111,13 +109,7 @@ class VirusNpc extends Npc {
         let tX: number = screenOrigin.getX();
         let tY: number = screenOrigin.getY();
 
-        for(let i = 0; i < 11; i++) {
-            this.transformedPoints[i].setX(VirusNpc.drawPoints[i].getX());
-            this.transformedPoints[i].setY(VirusNpc.drawPoints[i].getY());
-            this.transformedPoints[i].addX(super.getXPosition() - tX);
-            this.transformedPoints[i].addY(super.getYPosition() - tY);
-        }
-        for(let i = 11; i < 13; i++) {
+        for(let i = 0; i < this.transformedPoints.length; i++) {
             this.transformedPoints[i].addX(super.getXPosition() - tX);
             this.transformedPoints[i].addY(super.getYPosition() - tY);
         }

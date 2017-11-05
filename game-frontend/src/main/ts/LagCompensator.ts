@@ -113,9 +113,9 @@ class LagCompensator {
 
     public compensateNpc(npc: Npc, npcInfo: NpcInfo): void {
         npc.setHealth(npcInfo.health);
+        npc.setAngle(npcInfo.angle);
         if(!LagCompensator.enabled) {
             npc.setPosition(npcInfo.positionX, npcInfo.positionY);
-            npc.setAngle(npcInfo.angle);
             return;
         }
 
