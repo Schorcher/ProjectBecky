@@ -40,7 +40,6 @@ class GameClient implements GameEntity {
     private numFrames: number = 0;
     private lagCompensator: LagCompensator = new LagCompensator(30);
 
-
     /**
      * Creates a new GameClient instance.
      * @param canvas A reference to the canvas element to render to.
@@ -195,7 +194,6 @@ class GameClient implements GameEntity {
         this.background = new GameBackground(this.canvas.width, this.canvas.height, this.worldWidth, this.worldHeight);
         this.player = new ClientPlayer(this, 0, 0, 0, this.username);
         this.background.linkPlayer(this.player);
-
         this.gameUI = new GameUI(this.canvas.width, this.canvas.height);
         this.gameUI.linkPlayer(this.player);
     }

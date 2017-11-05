@@ -70,6 +70,5 @@ class SimpleRenderer implements Renderer {
 
         // Render the UI Components
         this.gameUI.draw(this.renderingContext, this.screenOrigin);
-
     }
 }
