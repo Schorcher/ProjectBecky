@@ -16,7 +16,7 @@ public class VirusNpc extends Npc {
 
     protected VirusNpc(final NewGameWorld gameWorld) {
         super(gameWorld);
-        super.collisionRadius = 16;
+        super.collisionRadius = 18;
         super.maxVelocity = 250.0f;
         super.npcHealth = 5;
         super.pointsValue = 2;

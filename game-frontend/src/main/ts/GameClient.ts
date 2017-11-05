@@ -304,15 +304,9 @@ class GameClient implements GameEntity {
                     if(n !== null) {
                         this.lagCompensator.compensateNpc(n, npcInfo);
                     }
-                    let construct = window[npcInfo.type];
-                    let dummyFunction = function() {};
-                    dummyFunction.prototype = construct.prototype;
-                    let obj = new dummyFunction();
-                    construct.apply(obj, [this, npcInfo.npcId]);
-                    obj.constructor = construct;
-                    let npc: Npc = obj as Npc;
-                    this.npcs.add(npc);
-                    this.renderer.addRenderable(npc);
+                    else {
+                        this.spawnNpc(npcInfo);
+                    }
                 }
                 else if(npcInfo.state === Npc.STATE_UPDATE_NPC) {
                     let npc: Npc = this.getNpcById(npcInfo.npcId);
@@ -320,16 +314,7 @@ class GameClient implements GameEntity {
                         this.lagCompensator.compensateNpc(npc, npcInfo);
                     }
                     else {
-                        let construct = window[npcInfo.type];
-                        let dummyFunction = function() {};
-                        dummyFunction.prototype = construct.prototype;
-                        let obj = new dummyFunction();
-                        construct.apply(obj, [this, npcInfo.npcId]);
-                        obj.constructor = construct;
-                        let npc: Npc = obj as Npc;
-                        this.lagCompensator.compensateNpc(npc, npcInfo);
-                        this.npcs.add(npc);
-                        this.renderer.addRenderable(npc);
+                        this.spawnNpc(npcInfo);
                     }
                 }
                 else if(npcInfo.state === Npc.STATE_DEAD_NPC) {
@@ -339,7 +324,6 @@ class GameClient implements GameEntity {
                         this.npcs.remove(npc);
                     }
                 }
-                console.log(this.npcs.length);
             }
         }
         else if((object = PlayerListChange.getValidObjectFromJson(message)) !== null) {
@@ -491,6 +475,20 @@ class GameClient implements GameEntity {
         }
 
         return null;
+    }
+
+    private spawnNpc = (npcInfo: NpcInfo): void => {
+        let npc: Npc = null;
+        if(npcInfo.type === "VirusNpc") {
+            npc = new VirusNpc(this, npcInfo.npcId);
+        }
+        else if(npcInfo.type === "InfectedNpc") {
+            npc = new InfectedNpc(this, npcInfo.npcId);
+        }
+
+        this.lagCompensator.compensateNpc(npc, npcInfo);
+        this.renderer.addRenderable(npc);
+        this.npcs.add(npc);
     }
 
     public getXPosition():number { return 0; }

@@ -135,7 +135,7 @@ class LagCompensator {
 
         //no matter what, we always set acceleration and velocity
         npc.setAcceleration(npcInfo.accelerationX, npcInfo.accelerationY);
-        npc.setVelocity(npcInfo.velocityX, npcInfo.velocityY);
+        npc.setVelocity(velocity.getX(), velocity.getY());
 
         //figure out how to handle a difference in values
         if(delta > LagCompensator.THRESHOLD_MAX_ADJUST) {
