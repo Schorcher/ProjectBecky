@@ -23,7 +23,6 @@ abstract class Npc implements GameEntity, Updateable, Renderable {
     constructor(parent: GameEntity, npcId: number) {
         this.parent = parent;
         this.npcId = npcId;
-        this.position = new Point(0, 0);
     }
 
     public getChildEntities(): Set<GameEntity> {
@@ -71,11 +70,13 @@ abstract class Npc implements GameEntity, Updateable, Renderable {
     }
 
     public setPosition(x: number, y: number): void {
-        this.position = new Point(x, y);
+        this.position.setX(x);
+        this.position.setY(y);
     }
 
     public setVelocity(x: number, y: number): void {
-        this.velocity = new Point(x, y);
+        this.velocity.setX(x);
+        this.velocity.setY(y);
     }
 
     public setCompensationVelocity(velocity: Point, numFrames: number): void {
@@ -84,7 +85,8 @@ abstract class Npc implements GameEntity, Updateable, Renderable {
     }
 
     public setAcceleration(x: number, y: number): void {
-        this.acceleration = new Point(x, y);
+        this.acceleration.setX(x);
+        this.acceleration.setY(y);
     }
 
     public setAngle(angle: number) {
@@ -96,6 +98,10 @@ abstract class Npc implements GameEntity, Updateable, Renderable {
     }
 
     public update(elapsedTime: number): void {
+        if(!LagCompensator.enabled) {
+            return;
+        }
+
         let multiplier: number = elapsedTime / 1000.0;
 
         this.velocity.addX(this.acceleration.getX() * multiplier);

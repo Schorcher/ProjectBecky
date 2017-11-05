@@ -24,17 +24,11 @@ class VirusNpc extends Npc {
 
     constructor(parent: GameEntity, npcId: number) {
         super(parent, npcId);
+        this.max_velocity = 250.0;
 
         //init the point objects for the transformed points
         for(let i = 0; i < 13; i++) {
             this.transformedPoints[i] = new Point();
-        }
-    }
-
-    public update(elapsedTime: number): void {
-        //call the super update method if lag compensation is enabled
-        if(LagCompensator.enabled) {
-            super.update(elapsedTime);
         }
     }
 
