@@ -1,5 +1,6 @@
 package com.becky.world.physics;
 
+import com.becky.networking.message.PointsUpdate;
 import com.becky.world.NewGameWorld;
 import com.becky.world.entity.Bullet;
 import com.becky.world.entity.GameEntity;
@@ -50,7 +51,14 @@ public class BulletCollisionDetector implements PhysicsFilter {
                     bullet.setState(Bullet.STATE_DEAD_BULLET);
                     worldBullets.remove(bullet);
                     i--;
-                    bullet.getOwner().addScore(npc.getNpcPointsValue());
+                    if(npc.getNpcHealth() == 0) {
+                        final Player attacker = bullet.getOwner();
+                        attacker.addScore(npc.getNpcPointsValue());
+                        final PointsUpdate pointsUpdate = new PointsUpdate();
+                        pointsUpdate.setUsername(attacker.getPlayerUsername());
+                        pointsUpdate.setNumPoints(attacker.getScore());
+                        gameWorld.getMessageTransmitter().transmitMessage(attacker, pointsUpdate.jsonSerialize());
+                    }
                 }
             }
         }

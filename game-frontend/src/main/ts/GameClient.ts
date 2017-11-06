@@ -365,6 +365,7 @@ class GameClient implements GameEntity {
             let points: PointsUpdate = object as PointsUpdate;
             if(this.player.getUsername() === points.username) {
                 this.player.setScore(points.numPoints);
+                console.log(points.numPoints);
             }
         }
         else if((object = PlayerHealthMessage.getValidObjectFromJson(message)) !== null) {

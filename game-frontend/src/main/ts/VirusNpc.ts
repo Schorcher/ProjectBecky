@@ -74,7 +74,7 @@ class VirusNpc extends Npc {
     private setLegEndpoints(): void {
         let speedSquared: number = Math.pow(this.getXVelocity(), 2) + Math.pow(this.getYVelocity(), 2);
         let changeX: number = Math.min(4.0, 0.000128 * speedSquared);
-        let changeY: number = Math.min(1.0, 0.000032 * speedSquared);
+        let changeY: number = Math.min(1.0, 0.000064 * speedSquared);
 
         //note, still working with local points as in, points that have not
         //been transformed or rotated

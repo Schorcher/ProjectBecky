@@ -26,7 +26,8 @@ public class PointsUpdate implements NetworkedMessage {
         return this.numPoints;
     }
 
+    @Override
     public String jsonSerialize() {
-        return PointsUpdate.class.getSimpleName() + new JSONObject(this).toString();
+        return PointsUpdate.class.getSimpleName() + ":" + new JSONObject(this).toString();
     }
 }
