@@ -11,6 +11,23 @@ class ClientPlayer implements Player, Updateable, GameEntity {
     static acceleration: number = 1800;
     static max_velocity: number = 450;
 
+    private static points: Point[] = [
+        new Point(0, -32),
+        new Point(12, -10),
+        new Point(32, 32),
+        new Point(0, 14),
+        new Point(-32, 32),
+        new Point(-12, -10)
+    ];
+    private static polyfill1_ind: number[] = [0, 5, 3, 1];
+    private static polyfill2_ind: number[] = [5, 3, 4];
+    private static polyfill3_ind: number[] = [3, 1, 2];
+    private static outline1_ind: number[] = [4, 0, 2, 3, 4];
+    private static outline2_ind: number[] = [5, 3, 1];
+    private static fillColor1: string = "#000000";
+    private static fillColor2: string = "#434343";
+    private static lineColor: string = "#00FF00";
+
     private position: Point;
     private acceleration: Point;
     private velocity: Point;
@@ -26,6 +43,7 @@ class ClientPlayer implements Player, Updateable, GameEntity {
     private username: string;
     private score: number = 0;
     private health: number = 10;
+    private transformedPoints: Point[] = [];
 
     constructor(parent: GameEntity, x: number = 0, y: number = 0, angle: number = 0, username: string) {
         this.position = new Point(x, y);
@@ -36,6 +54,10 @@ class ClientPlayer implements Player, Updateable, GameEntity {
         this.angle = angle;
         this.parent = parent;
         this.username = username;
+
+        for(let i = 0; i < ClientPlayer.points.length; i++) {
+            this.transformedPoints[i] = new Point();
+        }
     }
 
     public getUsername(): string {
@@ -177,6 +199,7 @@ class ClientPlayer implements Player, Updateable, GameEntity {
         context.stroke();
         context.closePath();
 
+
         // Draw the username under player
         context.font = "12px Arial";
         context.fillStyle = "yellow";
@@ -190,7 +213,6 @@ class ClientPlayer implements Player, Updateable, GameEntity {
             let fracSecond: number = elapsedTime / 1000.0;
             this.updateVelocity(fracSecond);
             this.updatePosition(fracSecond);
-            this.handleBorderCollision();
         }
     }
 
@@ -271,7 +293,11 @@ class ClientPlayer implements Player, Updateable, GameEntity {
         }
     }
 
-    private handleBorderCollision(): void {
-        //TODO: Handle collisions with the world border (blocked phase 1)
+    private rotatePoints(): void {
+
+    }
+
+    private transformPoints(screenMiddleX: number, screenMiddleY: number): void {
+
     }
 }
