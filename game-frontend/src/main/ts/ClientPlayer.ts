@@ -49,7 +49,7 @@ class ClientPlayer implements Player, Updateable, GameEntity {
     private shooting: boolean;
     private username: string;
     private score: number = 0;
-    private health: number = 10;
+    private health: number = 100;
     private transformedPoints: Point[] = [];
 
     constructor(parent: GameEntity, x: number = 0, y: number = 0, angle: number = 0, username: string) {
@@ -230,7 +230,8 @@ class ClientPlayer implements Player, Updateable, GameEntity {
         // Draw the username under player
         context.font = "12px Arial";
         context.fillStyle = "yellow";
-        context.fillText(this.username, (context.canvas.width / 2), (context.canvas.height / 2));
+        let offset = (this.username.length * 3);
+        context.fillText(this.username, ((context.canvas.width / 2) - offset), ((context.canvas.height / 2) - 60));
 
     }
 

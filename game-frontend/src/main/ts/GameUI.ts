@@ -10,13 +10,17 @@
 
 class GameUI implements Renderable {
 
+    private healthLabelFont: string = "Arial";
+    private healthLabelColor: string = "white";
+    private healthLabelSize: string = "22px"
+
     private healthBoarderColor: string = "white";
     private healthBorderThickness: number = 10;
     private healthInnerColor: string = "green";
 
     private scoreFont: string = "Arial";
     private scoreFontSize: string = "22px";
-    private scoreFontColor: string = "yellow";
+    private scoreFontColor: string = "white";
 
     private leaderBoardFont: string = "Arial";
     private leaderBoardFontSize: string = "16px";
@@ -81,14 +85,43 @@ class GameUI implements Renderable {
     }
 
     /**
-     *  This will draw a leader board in the top left of the screen for the set list of opponents given.
+     *  This will draw a leader board in the top right of the screen for the set list of opponents given. Draws the first
+     *  5 players
      *
      *  @param context
      */
     private drawLeaderBoard(context: CanvasRenderingContext2D): void {
-        for (let i = 0; i < this.leaderBoardList.length; i++) {
-            // Draw their score based on their position in the set
+        // Draw background of leader board
+        context.fillStyle = "rgba(0,0,0,.5)";
+        context.fillRect(context.canvas.width - 300, 10, 290, 210);
 
+        // Draw border of leader board
+        context.strokeStyle = this.leaderBoardBoarderColor;
+        context.lineWidth = this.leaderBoardBoarderThickness;
+        context.strokeRect(context.canvas.width - 300, 10, 290, 210);
+
+        // Draw label for leader board
+        context.fillStyle = "white";
+        context.fillText("Leader board", context.canvas.width - 220, 40);
+
+        // Start drawing the top 5 players
+        let x = context.canvas.width - 280;
+        let y = 80;
+
+        for (let i = 0; i < this.leaderBoardList.length; i++) {
+            if (i == 4) {
+                break;
+            }
+
+            if (this.leaderBoardList.get(i).getUsername().length > 10) {
+                // Draw their score based on their position in the set
+                context.fillText((i + 1) + " - " + this.leaderBoardList.get(i).getUsername().substr(0, 7) + "... (" + this.leaderBoardList.get(i).getScore() + " pts)", x, y);
+            }
+            else {
+                // Draw their score based on their position in the set
+                context.fillText((i + 1) + " - " + this.leaderBoardList.get(i).getUsername() + " (" + this.leaderBoardList.get(i).getScore() + " pts)", x, y);
+            }
+            y += 30;
         }
     }
 
@@ -98,22 +131,23 @@ class GameUI implements Renderable {
      *  @param context
      */
     private drawHealthBar(context: CanvasRenderingContext2D): void {
+        // Draw health bar background
+        context.fillStyle = "black";
+        context.fillRect(0, 0, 120, 30);
+
+        // Draw health bar label
+        context.font = this.healthLabelSize + " " + this.healthLabelFont;
+        context.fillStyle = this.healthLabelColor;
+        context.fillText("Health", 125, 30);
+
         // Draw border of health bar
         context.strokeStyle = this.healthBoarderColor;
         context.lineWidth = this.healthBorderThickness;
-        //context.beginPath();
+        context.strokeRect(5, 5, 110, 30);
 
-        // Potentially more complex health bar
-        // // Begin drawing
-        //
-        //
-        // context.stroke();
-        // context.closePath();
-
-        // Draw the internals of the health bar
-
-        // Basic Health Bar
-        context.fillRect(0, 0, (this.player.getHealth() / 100) * 140, 25);
+        // Draw internals of health bar
+        context.fillStyle = this.healthInnerColor;
+        context.fillRect(10, 10, (this.player.getHealth()), 20);
     }
 
     /**
@@ -122,10 +156,15 @@ class GameUI implements Renderable {
      *  @param context
      */
     private drawScore(context: CanvasRenderingContext2D): void {
-        // Set the location of the score to the top center of the screen canvas
-        // Draw the score at the location
+        // Set the context properties for the text
         context.font = this.scoreFontSize + " " + this.scoreFont;
         context.fillStyle = this.scoreFontColor;
-        context.fillText(this.player.getScore().toString(), (context.canvas.width / 2), (context.canvas.height - 26));
+
+        // Draw the Label for the Score
+        context.fillText("Score", (context.canvas.width / 2) - 20, 26);
+
+        // Set the location of the score to the top center of the screen canvas
+        // Draw the score at the location
+        context.fillText(this.player.getScore().toString(), (context.canvas.width / 2), 52);
     }
 }

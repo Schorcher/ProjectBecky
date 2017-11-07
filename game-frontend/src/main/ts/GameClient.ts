@@ -10,6 +10,7 @@
 ///<reference path="./networked/InitialPlayerList.ts"/>
 ///<reference path="./networked/PointsUpdate.ts"/>
 ///<reference path="./networked/PlayerHealthMessage.ts"/>
+///<reference path="./networked/HighscoreInfo.ts"/>
 ///<reference path="./Bullet.ts"/>
 ///<reference path="./GameUI.ts"/>
 
@@ -114,6 +115,10 @@ class GameClient implements GameEntity {
         let elapsedTime: number = frameEnd - this.frameStart;
         this.frameStart = frameEnd;
 
+        if (this.windowResized()) {
+            this.resizeGameArea();
+        }
+
         this.update(elapsedTime);
         this.draw();
 
@@ -156,6 +161,25 @@ class GameClient implements GameEntity {
         for(let i: number = 0; i < this.npcs.length; i++) {
             this.npcs.get(i).update(elapsedTime);
         }
+    }
+
+    private windowResized(): boolean {
+        if ((this.canvas.width !== window.innerWidth) || (this.canvas.height !== window.innerHeight)) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    private resizeGameArea(): void {
+        // Resize the canvas
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+
+        // Update the viewable area of background
+        this.background.setViewWidth(this.canvas.width);
+        this.background.setViewHeight(this.canvas.height);
     }
 
     private draw = (): void => {
@@ -383,7 +407,7 @@ class GameClient implements GameEntity {
             let high_scores: HighscoreInfo = object as HighscoreInfo;
             let usernames: string[] = high_scores.players;
             let scores: number[] = high_scores.scores;
-            let players: Set<Player> = new Set();
+            let players: Set<Player> = new Set<Player>();
             for(let i = 0; i < usernames.length; i++) {
                 let p: Player = this.getPlayerByUsername(usernames[i]);
                 if(p !== null) {

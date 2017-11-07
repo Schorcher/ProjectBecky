@@ -149,4 +149,12 @@ class GameBackground implements Renderable {
         context.stroke();
         context.closePath();
     }
+
+    public setViewWidth(width: number): void {
+        this.viewWidth = width;
+    }
+
+    public setViewHeight(height: number): void {
+        this.viewHeight = height;
+    }
 }

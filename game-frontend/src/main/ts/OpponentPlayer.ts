@@ -37,6 +37,7 @@ class OpponentPlayer implements Player, Updateable, GameEntity {
     private parent: GameEntity;
     private transformedPoints: Point[] = [];
     private score: number = 0;
+    private health: number = 100;
 
     constructor(parent: GameEntity, username: string) {
         this.position = new Point();
@@ -129,10 +130,28 @@ class OpponentPlayer implements Player, Updateable, GameEntity {
         context.lineJoin = "";
         context.lineCap = "";
 
+        // Draw the username
+        this.drawUsername(context, screenPos);
+
+        // Draw the health bar if health < 100
+        if (this.health < 100) {
+            this.drawHealthBar(context, screenPos);
+        }
+    }
+
+    private drawUsername(context: CanvasRenderingContext2D, screenPos: Point): void {
         // Draw the username under player
         context.font = "12px Arial";
         context.fillStyle = "red";
-        context.fillText(this.username, screenPos.getX() - 24, screenPos.getY() - 35);
+        let offset = (this.username.length * 3);
+        context.fillText(this.username, screenPos.getX() - offset, screenPos.getY() - 60);
+    }
+
+    private drawHealthBar(context: CanvasRenderingContext2D, screenPos: Point): void {
+        // Draw internals of health bar
+        context.fillStyle = "green";
+        //context.lineWidth = 5;
+        context.fillRect(screenPos.getX() - 50, screenPos.getY() - 50, (this.health), 10);
     }
 
     private getScreenspacePosition(screenOrigin: Point): Point {
