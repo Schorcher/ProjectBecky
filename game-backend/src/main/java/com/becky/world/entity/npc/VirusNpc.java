@@ -138,4 +138,46 @@ public class VirusNpc extends Npc {
 
     @Override
     public void setYVelocity(final float velocity) {}
+
+    public static class VirusNpcSpawnRules extends SpawnRules {
+        private static final int POPULATION_CAP = 300;
+
+        private boolean dormant = false;
+
+        public VirusNpcSpawnRules() {
+            super(VirusNpc.class);
+            super.setMaxPopulation(POPULATION_CAP);
+            super.setSpawnInterval(0);
+        }
+
+        /**
+         * The goal of these spawn rules is to spawn POPULATION_CAP npcs very quickly.
+         * After that many npcs are spawned, the goal is to wait until that population has fallen
+         * back down to 100 before spawning more.
+         * Also after POPULATION_CAP is reached, we only check once per 30 seconds.
+         * @param world
+         */
+        @Override
+        public void spawn(final NewGameWorld world) {
+            if(dormant) {
+                if(super.getCurrentPopulation() <= 100) {
+                    dormant = false;
+                    super.setSpawnInterval(1);
+                }
+                return;
+            }
+
+            final float xSpawn = (float)(Math.random() * world.getWorldWidth());
+            final float ySpawn = (float)(Math.random() * world.getWorldHeight());
+            final VirusNpc npc = new VirusNpc(world);
+            npc.setXPosition(xSpawn);
+            npc.setYPosition(ySpawn);
+            world.addGameEntity(npc);
+
+            if(super.getCurrentPopulation() >= POPULATION_CAP) {
+                super.setSpawnInterval(30000);
+                dormant = true;
+            }
+        }
+    }
 }

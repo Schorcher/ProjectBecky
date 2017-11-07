@@ -20,6 +20,7 @@ import com.becky.world.physics.WorldBorderCollisionDetector;
 import org.java_websocket.WebSocket;
 import org.reflections.Reflections;
 
+import java.awt.geom.Point2D;
 import java.lang.reflect.Constructor;
 import java.util.*;
 
@@ -34,10 +35,11 @@ public class NewGameWorld implements Runnable {
     private final PlayerMessageTransmitter messageTransmitter = new PlayerMessageTransmitter();
     private final List<WorldEventListener> worldEventListeners = new ArrayList<>();
     private final NpcSpawner spawner = new NpcSpawner(this);
+    private final Point2D.Float worldDimension = new Point2D.Float(8000.0f, 8000.0f);
 
     public NewGameWorld() {
         physicsFilters.add(new BulletCollisionDetector(this));
-        physicsFilters.add(new WorldBorderCollisionDetector(8000.0f, 8000.0f));
+        physicsFilters.add(new WorldBorderCollisionDetector(worldDimension.x, worldDimension.y));
         physicsFilters.add(new PlayerCollisionDetector(this));
         physicsFilters.add(new NpcCollisionDetector(this));
         initNpcTypes();
@@ -316,5 +318,13 @@ public class NewGameWorld implements Runnable {
         synchronized (this.worldEventListeners) {
             worldEventListeners.remove(listener);
         }
+    }
+
+    public float getWorldWidth() {
+        return this.worldDimension.x;
+    }
+
+    public float getWorldHeight() {
+        return this.worldDimension.y;
     }
 }

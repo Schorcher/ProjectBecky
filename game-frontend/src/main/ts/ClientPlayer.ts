@@ -30,6 +30,7 @@ class ClientPlayer implements Player, Updateable, GameEntity {
     private static fillColor1: string = "#000000";
     private static fillColor2: string = "#434343";
     private static lineColor: string = "#00FF00";
+    private static secondaryLineColor: string = "#00c100";
     private static leftLegTip: number = 4;
     private static rightLegTip: number = 2;
     private static legElongateRatio: number = 5.0 / ClientPlayer.max_velocity;
@@ -202,13 +203,27 @@ class ClientPlayer implements Player, Updateable, GameEntity {
         this.fillPolygon(context, ClientPlayer.polyfill2_ind);
         this.fillPolygon(context, ClientPlayer.polyfill3_ind);
 
-        //draw the outline
-        context.strokeStyle = ClientPlayer.lineColor;
+        //prepare to draw the background outline
+        context.strokeStyle = ClientPlayer.secondaryLineColor;
         context.lineJoin = ClientPlayer.outlineJoins;
-        context.lineWidth = ClientPlayer.outlineWidth;
+        context.lineWidth = ClientPlayer.outlineWidth + 4;
+        context.globalAlpha = 0.3;
         context.lineCap = ClientPlayer.outlineEndcaps;
+
+        //draw background lines
         this.linePolygon(context, ClientPlayer.outline1_ind);
         this.linePolygon(context, ClientPlayer.outline2_ind);
+
+        //prepare to draw the foreground outline
+        context.globalAlpha = 1.0;
+        context.lineWidth = ClientPlayer.outlineWidth;
+        context.strokeStyle = ClientPlayer.lineColor;
+
+        //draw foreground outline
+        this.linePolygon(context, ClientPlayer.outline1_ind);
+        this.linePolygon(context, ClientPlayer.outline2_ind);
+
+        //cleanup settings
         context.lineJoin = "";
         context.lineCap = "";
 

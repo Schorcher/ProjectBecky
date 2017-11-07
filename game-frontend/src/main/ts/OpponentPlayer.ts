@@ -26,12 +26,13 @@ class OpponentPlayer implements Player, Updateable, GameEntity {
     private static fillColor1: string = "#000000";
     private static fillColor2: string = "#434343";
     private static lineColor: string = "#FF0000";
+    private static secondaryLineColor: string = "#a60000";
     private static leftLegTip: number = 4;
     private static rightLegTip: number = 2;
     private static legElongateRatio: number = 5.0 / ClientPlayer.max_velocity;
 
     private position : Point;
-    private angle: number;
+    private angle: number = 0;
     private username: string;
     private parent: GameEntity;
     private transformedPoints: Point[] = [];
@@ -96,20 +97,28 @@ class OpponentPlayer implements Player, Updateable, GameEntity {
         this.fillPolygon(context, OpponentPlayer.polyfill2_ind);
         this.fillPolygon(context, OpponentPlayer.polyfill3_ind);
 
-        //draw the outline
-        context.strokeStyle = OpponentPlayer.lineColor;
+        //draw prepare to draw first outline set
+        context.strokeStyle = OpponentPlayer.secondaryLineColor;
+        context.globalAlpha = 0.3;
         context.lineJoin = OpponentPlayer.outlineJoins;
-        context.lineWidth = OpponentPlayer.outlineWidth;
+        context.lineWidth = OpponentPlayer.outlineWidth + 4;
         context.lineCap = OpponentPlayer.outlineEndcaps;
+
+        //draw the first outline set
         this.linePolygon(context, OpponentPlayer.outline1_ind);
         this.linePolygon(context, OpponentPlayer.outline2_ind);
+
+        //prepare to draw second outline set
+        context.globalAlpha = 1.0;
+        context.strokeStyle = OpponentPlayer.lineColor;
+        context.lineWidth = OpponentPlayer.outlineWidth;
+
+        //draw the second outline set
+        this.linePolygon(context, OpponentPlayer.outline1_ind);
+        this.linePolygon(context, OpponentPlayer.outline2_ind);
+
         context.lineJoin = "";
         context.lineCap = "";
-
-        // Draw the username under player
-        context.font = "12px Arial";
-        context.fillStyle = "yellow";
-        context.fillText(this.username, (context.canvas.width / 2), (context.canvas.height / 2));
 
         // Draw the username under player
         context.font = "12px Arial";
