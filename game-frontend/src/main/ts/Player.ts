@@ -26,4 +26,16 @@ interface Player extends Renderable, GameEntity {
      * @param y
      */
     setPosition(x: number, y: number): void;
+
+    /**
+     * Gets this player's score
+     * @returns {number}
+     */
+    getScore(): number;
+
+    /**
+     * Sets this player's score.
+     * @param {number} score
+     */
+    setScore(score: number): void;
 }

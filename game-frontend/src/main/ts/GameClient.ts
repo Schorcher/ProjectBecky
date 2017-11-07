@@ -379,6 +379,20 @@ class GameClient implements GameEntity {
                 this.resetGamePage("Killed by " + health.affectedBy + ". You had " + this.player.getScore() + " points.");
             }
         }
+        else if((object = HighscoreInfo.getValidObjectFromJson(message)) !== null) {
+            let high_scores: HighscoreInfo = object as HighscoreInfo;
+            let usernames: string[] = high_scores.players;
+            let scores: number[] = high_scores.scores;
+            let players: Set<Player> = new Set();
+            for(let i = 0; i < usernames.length; i++) {
+                let p: Player = this.getPlayerByUsername(usernames[i]);
+                if(p !== null) {
+                    p.setScore(scores[i]);
+                    players.add(p);
+                }
+            }
+            this.gameUI.linkLeaderBoardList(players);
+        }
     }
 
     private resetGamePage = (message: string) => {

@@ -36,6 +36,7 @@ class OpponentPlayer implements Player, Updateable, GameEntity {
     private username: string;
     private parent: GameEntity;
     private transformedPoints: Point[] = [];
+    private score: number = 0;
 
     constructor(parent: GameEntity, username: string) {
         this.position = new Point();
@@ -78,6 +79,14 @@ class OpponentPlayer implements Player, Updateable, GameEntity {
 
     public getChildEntities(): Set<GameEntity> {
         return new Set<GameEntity>();
+    }
+
+    public setScore(score: number): void {
+        this.score = score;
+    }
+
+    public getScore(): number {
+        return this.score;
     }
 
     public update(elapsedTime: number) : void {

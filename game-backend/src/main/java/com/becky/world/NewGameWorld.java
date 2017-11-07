@@ -2,6 +2,7 @@ package com.becky.world;
 
 import com.becky.networking.PlayerMessageTransmitter;
 import com.becky.networking.message.BulletInfo;
+import com.becky.networking.message.HighscoreInfo;
 import com.becky.networking.message.NpcInfo;
 import com.becky.networking.message.PlayerHealthMessage;
 import com.becky.networking.message.PointsUpdate;
@@ -55,8 +56,10 @@ public class NewGameWorld implements Runnable {
         long frameStart = System.currentTimeMillis();
         long frameEnd = frameStart;
         long elapsedTime;
+        long frameNumber = 0;
 
         while(true) {
+            frameNumber++;
             elapsedTime = frameEnd - frameStart;
             frameStart = System.currentTimeMillis();
 
@@ -72,6 +75,9 @@ public class NewGameWorld implements Runnable {
             //spawn npcs as necessary
             spawner.executeSpawnRules();
 
+            if(frameNumber % 300 == 0) {//every 300 frames (15 seconds)
+                this.transmitHighscores();
+            }
             //see if we need to sleep
             //sleep if necessary
             frameEnd = System.currentTimeMillis();
@@ -200,6 +206,45 @@ public class NewGameWorld implements Runnable {
         }
     }
 
+    private void transmitHighscores() {
+        final List<Player> allPlayers = this.getAllPlayers();
+        final HighscoreInfo highscoreInfo = this.buildHighscoreList(allPlayers);
+        final String json = highscoreInfo.jsonSerialize();
+        for(final Player p: allPlayers) {
+            this.messageTransmitter.transmitMessage(p, json);
+        }
+    }
+
+    private HighscoreInfo buildHighscoreList(final List<Player> allPlayers) {
+        Player[] ordered = new Player[allPlayers.size()];
+        ordered = allPlayers.toArray(ordered);
+
+        final int length = ordered.length < 10 ? ordered.length : 10;
+        for(int i = 0; i < 10 && i < length; i++) {
+            int currentScore = ordered[i].getScore();
+            for(int j = i+1; j < ordered.length; j++) {
+                if(ordered[j].getScore() > currentScore) {
+                    final Player temp = ordered[j];
+                    ordered[j] = ordered[i];
+                    ordered[i] = temp;
+                    currentScore = temp.getScore();
+                }
+            }
+        }
+
+
+        final String[] playerNames = new String[length];
+        final int[] scores = new int[length];
+        for(int i = 0; i < length; i++) {
+            playerNames[i] = ordered[i].getPlayerUsername();
+            scores[i] = ordered[i].getScore();
+        }
+        final HighscoreInfo highscoreInfo = new HighscoreInfo();
+        highscoreInfo.setPlayers(playerNames);
+        highscoreInfo.setScores(scores);
+        return highscoreInfo;
+    }
+
     private void initNpcTypes() {
         final Reflections reflections = new Reflections(this.getClass().getPackage().getName());
         final Set<Class<? extends SpawnRules>> npcSpawnRulesClasses = reflections.getSubTypesOf(SpawnRules.class);
@@ -225,6 +270,7 @@ public class NewGameWorld implements Runnable {
         }
 
         this.addGameEntity(player);
+        this.transmitHighscores();
     }
 
     public void addGameEntity(final GameEntity entity) {
@@ -302,6 +348,7 @@ public class NewGameWorld implements Runnable {
         }
 
         this.removeGameEntity(player);
+        this.transmitHighscores();
     }
 
     public PlayerMessageTransmitter getMessageTransmitter() {
